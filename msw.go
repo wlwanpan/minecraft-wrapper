@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"log"
+	"regexp"
 
 	"github.com/looplab/fsm"
 )
@@ -13,10 +15,23 @@ const (
 	Stopping = "stopping"
 )
 
+var (
+	logRegex = regexp.MustCompile(`(\[[0-9:]*\]) \[([A-z #0-9]*)\/([A-z #]*)\](.*)`)
+)
+
 type Update struct {
 }
 
 func logLineToUpdate(line string) *Update {
+	// logData := logRegex.FindAllStringSubmatch(line, 5)
+
+	// log_time = r.group(1)
+	// server_thread = r.group(2)
+	// log_level = r.group(3)
+	// output = r.group(4)
+	// for _, i := range logData {
+	// 	log.Println(i)
+	// }
 	return nil
 }
 
@@ -50,6 +65,20 @@ func (m *MSW) initMachine() {
 					Stopping,
 				},
 				Dst: Starting,
+			},
+			fsm.EventDesc{
+				Name: Starting,
+				Src: []string{
+					Offline,
+				},
+				Dst: Online,
+			},
+			fsm.EventDesc{
+				Name: Online,
+				Src: []string{
+					Starting,
+				},
+				Dst: Stopping,
 			},
 		},
 		fsm.Callbacks{
@@ -94,6 +123,7 @@ func (m *MSW) processConsoleStdout(ctx context.Context) {
 				// log.Println(err)
 				continue
 			}
+			log.Println(line)
 			update := logLineToUpdate(line)
 			m.processUpdate(update)
 		}

@@ -24,11 +24,12 @@ func generateJavaRunCmd(serverPath string, iniHeapSize, maxHeapSize int) *exec.C
 }
 
 func main() {
-	execCmd := generateJavaRunCmd("server.jar", 2024, 2014)
+	execCmd := generateJavaRunCmd("server/server.jar", 1024, 2024)
 	console := NewConsole(execCmd)
 	msw := NewMSW(console)
 
 	msw.Start(context.Background())
 
-	msw.console.cmd.Wait()
+	for {
+	}
 }
