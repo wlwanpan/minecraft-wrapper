@@ -3,37 +3,17 @@ package main
 import (
 	"context"
 	"log"
-	"regexp"
 
 	"github.com/looplab/fsm"
 )
 
 const (
 	Offline  = "offline"
-	Starting = "starting"
 	Online   = "online"
+	Starting = "starting"
 	Stopping = "stopping"
+	Saving   = "saving"
 )
-
-var (
-	logRegex = regexp.MustCompile(`(\[[0-9:]*\]) \[([A-z #0-9]*)\/([A-z #]*)\](.*)`)
-)
-
-type Update struct {
-}
-
-func logLineToUpdate(line string) *Update {
-	// logData := logRegex.FindAllStringSubmatch(line, 5)
-
-	// log_time = r.group(1)
-	// server_thread = r.group(2)
-	// log_level = r.group(3)
-	// output = r.group(4)
-	// for _, i := range logData {
-	// 	log.Println(i)
-	// }
-	return nil
-}
 
 type Callback func(*MSW) error
 
@@ -82,10 +62,22 @@ func (m *MSW) initMachine() {
 			},
 		},
 		fsm.Callbacks{
-			"enter_offline": func(e *fsm.Event) { m.triggerOfflineCallbacks() },
-			"enter_online":  func(e *fsm.Event) { m.triggerOnlineCallbacks() },
+			"enter_offline": func(e *fsm.Event) {
+				m.triggerOfflineCallbacks()
+			},
+			"enter_online": func(e *fsm.Event) {
+				m.triggerOnlineCallbacks()
+			},
 		},
 	)
+}
+
+func (m *MSW) RegisterOnlineCallbacks(cbs ...Callback) {
+	m.onlineCallbacks = append(m.onlineCallbacks, cbs...)
+}
+
+func (m *MSW) RegisterOfflineCallback(cbs ...Callback) {
+	m.offlineCallbacks = append(m.offlineCallbacks, cbs...)
 }
 
 func (m *MSW) triggerOfflineCallbacks() {
@@ -105,6 +97,9 @@ func (m *MSW) State() string {
 }
 
 func (m *MSW) Start(ctx context.Context) error {
+	if err := m.machine.Transition(); err != nil {
+		return err
+	}
 	if err := m.console.Start(); err != nil {
 		return err
 	}
@@ -120,17 +115,22 @@ func (m *MSW) processConsoleStdout(ctx context.Context) {
 		default:
 			line, err := m.console.Read()
 			if err != nil {
-				// log.Println(err)
+				log.Println(err)
 				continue
 			}
-			log.Println(line)
-			update := logLineToUpdate(line)
-			m.processUpdate(update)
+			if err := m.processLog(line); err != nil {
+				log.Println(err)
+			}
 		}
 	}
 }
 
-func (m *MSW) processUpdate(update *Update) error {
+func (m *MSW) processLog(line string) error {
+	logLine, err := strToLogLine(line)
+	if err != nil {
+		return err
+	}
+	log.Println(logLine.output)
 	return nil
 }
 

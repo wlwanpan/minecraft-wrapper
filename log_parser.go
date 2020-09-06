@@ -1,6 +1,9 @@
 package main
 
-import "regexp"
+import (
+	"errors"
+	"regexp"
+)
 
 const (
 	LogLevelInfo  = "INFO"
@@ -8,24 +11,33 @@ const (
 	LogLevelERROR = "ERROR"
 )
 
-var (
-	logRegex = regexp.MustCompile(`(\[[0-9:]*\]) \[([A-z #0-9]*)\/([A-z #]*)\]: (.*)`)
+const (
+	logSubmatchCount int = 4
 )
 
-type Update struct {
-	timestamp string // Parse to time.Time
-	logLevel  string
+var (
+	logRegex = regexp.MustCompile(`(\[[0-9:]*\]) \[([A-z #0-9]*)\/([A-z #]*)\]: (.*)`)
+
+	ErrMatchingLog = errors.New("err matching log line")
+)
+
+type LogLine struct {
+	timestamp  string
+	threadName string
+	level      string
+	output     string
 }
 
-func logLineToUpdate(line string) *Update {
-	matches := logRegex.FindAllStringSubmatch(line, 5)
-
-	// log_time = r.group(1)
-	// server_thread = r.group(2)
-	// log_level = r.group(3)
-	// output = r.group(4)
-	// for _, i := range logData {
-	// 	log.Println(i)
-	// }
-	return nil
+func strToLogLine(line string) (*LogLine, error) {
+	matches := logRegex.FindAllStringSubmatch(line, logSubmatchCount)
+	if len(matches) < 1 {
+		return nil, ErrMatchingLog
+	}
+	subgroups := matches[0]
+	return &LogLine{
+		timestamp:  subgroups[1],
+		threadName: subgroups[2],
+		level:      subgroups[3],
+		output:     subgroups[4],
+	}, nil
 }
