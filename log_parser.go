@@ -1,25 +1,11 @@
-package main
+package wrapper
 
 import (
-	"errors"
+	"log"
 	"regexp"
 )
 
-const (
-	LogLevelInfo  = "INFO"
-	LogLevelWarn  = "WARN"
-	LogLevelERROR = "ERROR"
-)
-
-const (
-	logSubmatchCount int = 4
-)
-
-var (
-	logRegex = regexp.MustCompile(`(\[[0-9:]*\]) \[([A-z #0-9]*)\/([A-z #]*)\]: (.*)`)
-
-	ErrMatchingLog = errors.New("err matching log line")
-)
+var logRegex = regexp.MustCompile(`(\[[0-9:]*\]) \[([A-z(-| )#0-9]*)\/([A-z #]*)\]: (.*)`)
 
 type LogLine struct {
 	timestamp  string
@@ -28,16 +14,36 @@ type LogLine struct {
 	output     string
 }
 
-func strToLogLine(line string) (*LogLine, error) {
-	matches := logRegex.FindAllStringSubmatch(line, logSubmatchCount)
-	if len(matches) < 1 {
-		return nil, ErrMatchingLog
-	}
-	subgroups := matches[0]
+func ParseToLogLine(line string) *LogLine {
+	matches := logRegex.FindAllStringSubmatch(line, 4)
 	return &LogLine{
-		timestamp:  subgroups[1],
-		threadName: subgroups[2],
-		level:      subgroups[3],
-		output:     subgroups[4],
-	}, nil
+		timestamp:  matches[0][1],
+		threadName: matches[0][2],
+		level:      matches[0][3],
+		output:     matches[0][4],
+	}
+}
+
+type LogParser func(string) Event
+
+var eventToRegexp = map[Event]*regexp.Regexp{
+	StartedEvent: regexp.MustCompile(`Done (?s)(.*)! For help, type "help"`),
+	StartEvent:   regexp.MustCompile(`Starting minecraft server version (.*)`),
+	StopEvent:    regexp.MustCompile(`Stopping (.*) server`),
+}
+
+func LogParserFunc(line string) Event {
+	ll := ParseToLogLine(line)
+	log.Println(ll.output)
+
+	if ll.output == "" {
+		return EmptyEvent
+	}
+
+	for event, reg := range eventToRegexp {
+		if reg.MatchString(ll.output) {
+			return event
+		}
+	}
+	return EmptyEvent
 }
