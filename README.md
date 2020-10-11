@@ -1,1 +1,1 @@
-# msw-go
+# minecraft-wrapper
