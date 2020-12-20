@@ -132,28 +132,41 @@ func (w *Wrapper) processClock() {
 	}
 }
 
+// GameEvents returns a read channel with any game events like:
+// - Player joined
+// - Player left
+// - Player sent a message and so on.
 func (w *Wrapper) GameEvents() <-chan events.GameEvent {
 	return w.gameEventsChan
 }
 
+// RegisterStateChangeCBs allow you to register a callback func
+// that is called on each state changes to your minecraft server
+// For example: server goes from 'offline' to 'starting'.
 func (w *Wrapper) RegisterStateChangeCBs(cbs ...StateChangeFunc) {
 	w.stateChangeCBs = append(w.stateChangeCBs, cbs...)
 }
 
+// State returns the current state of the server, it can be one of:
+// 'offline', 'online', 'starting' or 'stopping'.
 func (w *Wrapper) State() string {
 	return w.machine.Current()
 }
 
+// Start will initialize the minecraft java process and start
+// orchestrating the wrapper machine.
 func (w *Wrapper) Start() error {
 	go w.processLogEvents()
 	go w.processClock()
 	return w.console.Start()
 }
 
+// Stop pipes a 'stop' command to the minecraft java process.
 func (w *Wrapper) Stop() error {
 	return w.console.WriteCmd("stop")
 }
 
+// Kill the java process, use with caution since it will not trigger a save game.
 func (w *Wrapper) Kill() error {
 	return w.console.Kill()
 }
