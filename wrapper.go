@@ -4,16 +4,7 @@ import (
 	"io"
 
 	"github.com/looplab/fsm"
-)
-
-type Event string
-
-const (
-	EmptyEvent   Event = "empty"
-	StartedEvent       = "started"
-	StoppedEvent       = "stopped"
-	StartEvent         = "start"
-	StopEvent          = "stop"
+	"github.com/wlwanpan/minecraft-wrapper/events"
 )
 
 const (
@@ -25,28 +16,28 @@ const (
 
 var wrapperFsmEvents = fsm.Events{
 	fsm.EventDesc{
-		Name: StopEvent,
+		Name: events.Stop,
 		Src:  []string{ServerOnline},
 		Dst:  ServerStopping,
 	},
 	fsm.EventDesc{
-		Name: StoppedEvent,
+		Name: events.Stopped,
 		Src:  []string{ServerStopping},
 		Dst:  ServerOffline,
 	},
 	fsm.EventDesc{
-		Name: StartEvent,
+		Name: events.Start,
 		Src:  []string{ServerOffline},
 		Dst:  ServerStarting,
 	},
 	fsm.EventDesc{
-		Name: StartedEvent,
+		Name: events.Started,
 		Src:  []string{ServerStarting},
 		Dst:  ServerOnline,
 	},
 }
 
-type StateChangeFunc func(Event, Event, *Wrapper)
+type StateChangeFunc func(events.Event, events.Event, *Wrapper)
 
 type Wrapper struct {
 	console        Console
@@ -76,13 +67,15 @@ func (w *Wrapper) newFSM() {
 		wrapperFsmEvents,
 		fsm.Callbacks{
 			"enter_state": func(ev *fsm.Event) {
-				w.triggerStateChangeCBs(Event(ev.Src), Event(ev.Dst))
+				srcEvent := events.NewStateEvent(ev.Src)
+				dstEvent := events.NewStateEvent(ev.Dst)
+				w.triggerStateChangeCBs(srcEvent, dstEvent)
 			},
 		},
 	)
 }
 
-func (w *Wrapper) triggerStateChangeCBs(from, to Event) {
+func (w *Wrapper) triggerStateChangeCBs(from, to events.Event) {
 	for _, f := range w.stateChangeCBs {
 		f(from, to, w)
 	}
@@ -92,27 +85,37 @@ func (w *Wrapper) processLogEvents() {
 	for {
 		line, err := w.console.ReadLine()
 		if err == io.EOF {
-			w.updateState(StoppedEvent)
+			w.updateState(events.StoppedEvent)
 			return
 		}
 
-		event := w.parseLineToEvent(line)
-		w.updateState(event)
+		event, t := w.parseLineToEvent(line)
+		if t == events.TypeState {
+			w.updateState(event)
+			return
+		}
+		w.pushGameEvent(event)
 	}
 }
 
-func (w *Wrapper) parseLineToEvent(line string) Event {
+func (w *Wrapper) parseLineToEvent(line string) (events.Event, int) {
 	return w.parser(line)
 }
 
-func (w *Wrapper) updateState(ev Event) error {
-	if ev == EmptyEvent {
+func (w *Wrapper) updateState(ev events.Event) error {
+	if ev.Is(events.NilEvent) {
+		// Ignore empty event updates.
 		return nil
 	}
-	return w.machine.Event(string(ev))
+	return w.machine.Event(ev.String())
 }
 
-func (w *Wrapper) RegisterStateChangeCBS(cbs ...StateChangeFunc) {
+func (w *Wrapper) pushGameEvent(gev events.Event) error {
+	// Push events to game event channel
+	return nil
+}
+
+func (w *Wrapper) RegisterStateChangeCBs(cbs ...StateChangeFunc) {
 	w.stateChangeCBs = append(w.stateChangeCBs, cbs...)
 }
 

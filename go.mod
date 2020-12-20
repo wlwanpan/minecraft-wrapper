@@ -1,4 +1,4 @@
-module github.com/wlwanpan/msw-go
+module github.com/wlwanpan/minecraft-wrapper
 
 go 1.12
 
