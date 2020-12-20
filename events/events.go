@@ -21,22 +21,22 @@ func (se StateEvent) Is(ev Event) bool {
 	return se.String() == ev.String()
 }
 
-func NewStateEvent(e string) Event {
+func NewStateEvent(e string) StateEvent {
 	return StateEvent{name: e}
 }
 
 var (
-	NilEvent     Event = NewStateEvent(Empty)
-	StartedEvent Event = NewStateEvent(Started)
-	StoppedEvent Event = NewStateEvent(Stopped)
-	StartEvent   Event = NewStateEvent(Start)
-	StopEvent    Event = NewStateEvent(Stop)
+	NilEvent     StateEvent = NewStateEvent(Empty)
+	StartedEvent StateEvent = NewStateEvent(Started)
+	StoppedEvent StateEvent = NewStateEvent(Stopped)
+	StartEvent   StateEvent = NewStateEvent(Start)
+	StopEvent    StateEvent = NewStateEvent(Stop)
 )
 
 type GameEvent struct {
 	id   int
 	name string
-	tick int
+	Tick int
 }
 
 func (ge GameEvent) String() string {
@@ -47,11 +47,14 @@ func (ge GameEvent) Is(e Event) bool {
 	return ge.String() == e.String()
 }
 
-func NewGameEvent(e string, tick int) GameEvent {
+func NewGameEvent(e string) GameEvent {
 	gameEventCount++
 	return GameEvent{
 		id:   gameEventCount,
 		name: e,
-		tick: tick,
 	}
 }
+
+var (
+	TimeIsEvent GameEvent = NewGameEvent(TimeIs)
+)

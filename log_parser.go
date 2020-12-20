@@ -1,7 +1,9 @@
 package wrapper
 
 import (
+	"log"
 	"regexp"
+	"strconv"
 
 	"github.com/wlwanpan/minecraft-wrapper/events"
 )
@@ -25,7 +27,7 @@ func ParseToLogLine(line string) *LogLine {
 	}
 }
 
-type LogParser func(string) (events.Event, int)
+type LogParser func(string, int) (events.Event, int)
 
 var stateEventToRegexp = map[string]*regexp.Regexp{
 	events.Started: regexp.MustCompile(`Done (?s)(.*)! For help`),
@@ -40,7 +42,7 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.Saved:        regexp.MustCompile(`Saved (?s)(.*)`),
 }
 
-func LogParserFunc(line string) (events.Event, int) {
+func LogParserFunc(line string, t int) (events.Event, int) {
 	ll := ParseToLogLine(line)
 	if ll.output == "" {
 		return events.NilEvent, events.TypeNil
@@ -53,7 +55,18 @@ func LogParserFunc(line string) (events.Event, int) {
 	}
 	for e, reg := range gameEventToRegex {
 		if reg.MatchString(ll.output) {
-			return events.NewGameEvent(e, 0), events.TypeGame
+			gameEvent := events.NewGameEvent(e)
+			gameEvent.Tick = t
+			if e == events.TimeIs {
+				tickStr := reg.FindStringSubmatch(ll.output)[1]
+				tick, err := strconv.Atoi(tickStr)
+				if err != nil {
+					log.Println("error parsing game tick: ", tickStr)
+				} else {
+					gameEvent.Tick = tick
+				}
+			}
+			return gameEvent, events.TypeGame
 		}
 	}
 	return events.NilEvent, events.TypeNil

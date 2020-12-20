@@ -40,9 +40,10 @@ var wrapperFsmEvents = fsm.Events{
 type StateChangeFunc func(events.Event, events.Event)
 
 type Wrapper struct {
+	machine        *fsm.FSM
 	console        Console
 	parser         LogParser
-	machine        *fsm.FSM
+	clock          *Clock
 	gameEventsChan chan (events.GameEvent)
 	stateChangeCBs []StateChangeFunc
 }
@@ -57,6 +58,7 @@ func NewWrapper(c Console, p LogParser) *Wrapper {
 	wpr := &Wrapper{
 		console:        c,
 		parser:         p,
+		clock:          NewClock(),
 		gameEventsChan: make(chan events.GameEvent, 10),
 	}
 	wpr.newFSM()
@@ -96,21 +98,38 @@ func (w *Wrapper) processLogEvents() {
 		case events.TypeState:
 			w.updateState(event)
 		case events.TypeGame:
-			select {
-			case w.gameEventsChan <- event.(events.GameEvent):
-			default:
-			}
+			w.handleGameEvent(event.(events.GameEvent))
 		default:
 		}
 	}
 }
 
 func (w *Wrapper) parseLineToEvent(line string) (events.Event, int) {
-	return w.parser(line)
+	return w.parser(line, w.clock.Tick)
 }
 
 func (w *Wrapper) updateState(ev events.Event) error {
 	return w.machine.Event(ev.String())
+}
+
+func (w *Wrapper) handleGameEvent(ev events.GameEvent) {
+	if ev.Is(events.TimeIsEvent) {
+		w.clock.syncTick(ev.Tick)
+	}
+	select {
+	case w.gameEventsChan <- ev:
+	default:
+	}
+}
+
+func (w *Wrapper) processClock() {
+	for {
+		select {
+		case <-w.clock.requestSync():
+			w.clock.resetLastSync()
+			w.console.WriteCmd("time query daytime")
+		}
+	}
 }
 
 func (w *Wrapper) GameEvents() <-chan events.GameEvent {
@@ -127,6 +146,7 @@ func (w *Wrapper) State() string {
 
 func (w *Wrapper) Start() error {
 	go w.processLogEvents()
+	go w.processClock()
 	return w.console.Start()
 }
 
