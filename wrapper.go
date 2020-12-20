@@ -37,12 +37,13 @@ var wrapperFsmEvents = fsm.Events{
 	},
 }
 
-type StateChangeFunc func(events.Event, events.Event, *Wrapper)
+type StateChangeFunc func(events.Event, events.Event)
 
 type Wrapper struct {
 	console        Console
 	parser         LogParser
 	machine        *fsm.FSM
+	gameEventsChan chan (events.GameEvent)
 	stateChangeCBs []StateChangeFunc
 }
 
@@ -54,8 +55,9 @@ func NewDefaultWrapper(server string, initial, max int) *Wrapper {
 
 func NewWrapper(c Console, p LogParser) *Wrapper {
 	wpr := &Wrapper{
-		console: c,
-		parser:  p,
+		console:        c,
+		parser:         p,
+		gameEventsChan: make(chan events.GameEvent, 10),
 	}
 	wpr.newFSM()
 	return wpr
@@ -77,7 +79,7 @@ func (w *Wrapper) newFSM() {
 
 func (w *Wrapper) triggerStateChangeCBs(from, to events.Event) {
 	for _, f := range w.stateChangeCBs {
-		f(from, to, w)
+		f(from, to)
 	}
 }
 
@@ -90,11 +92,16 @@ func (w *Wrapper) processLogEvents() {
 		}
 
 		event, t := w.parseLineToEvent(line)
-		if t == events.TypeState {
+		switch t {
+		case events.TypeState:
 			w.updateState(event)
-			return
+		case events.TypeGame:
+			select {
+			case w.gameEventsChan <- event.(events.GameEvent):
+			default:
+			}
+		default:
 		}
-		w.pushGameEvent(event)
 	}
 }
 
@@ -103,16 +110,11 @@ func (w *Wrapper) parseLineToEvent(line string) (events.Event, int) {
 }
 
 func (w *Wrapper) updateState(ev events.Event) error {
-	if ev.Is(events.NilEvent) {
-		// Ignore empty event updates.
-		return nil
-	}
 	return w.machine.Event(ev.String())
 }
 
-func (w *Wrapper) pushGameEvent(gev events.Event) error {
-	// Push events to game event channel
-	return nil
+func (w *Wrapper) GameEvents() <-chan events.GameEvent {
+	return w.gameEventsChan
 }
 
 func (w *Wrapper) RegisterStateChangeCBs(cbs ...StateChangeFunc) {

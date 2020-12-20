@@ -1,7 +1,6 @@
 package wrapper
 
 import (
-	"log"
 	"regexp"
 
 	"github.com/wlwanpan/minecraft-wrapper/events"
@@ -29,22 +28,20 @@ func ParseToLogLine(line string) *LogLine {
 type LogParser func(string) (events.Event, int)
 
 var stateEventToRegexp = map[string]*regexp.Regexp{
-	events.Started: regexp.MustCompile(`Done (?s)(.*)! For help, type "help"\n`),
-	events.Start:   regexp.MustCompile(`Starting minecraft server version (.*)\n`),
-	events.Stop:    regexp.MustCompile(`Stopping (.*) server\n`),
+	events.Started: regexp.MustCompile(`Done (?s)(.*)! For help`),
+	events.Start:   regexp.MustCompile(`Starting minecraft server version (.*)`),
+	events.Stop:    regexp.MustCompile(`Stopping (.*) server`),
 }
 
 var gameEventToRegex = map[string]*regexp.Regexp{
-	events.PlayerJoined: regexp.MustCompile(`(?s)(.*) joined the game\n`),
-	events.PlayerLeft:   regexp.MustCompile(`(?s)(.*) left the game\n`),
-	events.TimeIs:       regexp.MustCompile(`The time is (?s)(.*)\n`),
-	events.Saved:        regexp.MustCompile(`Saved (?s)(.*)\n`),
+	events.PlayerJoined: regexp.MustCompile(`(?s)(.*) joined the game`),
+	events.PlayerLeft:   regexp.MustCompile(`(?s)(.*) left the game`),
+	events.TimeIs:       regexp.MustCompile(`The time is (?s)(.*)`),
+	events.Saved:        regexp.MustCompile(`Saved (?s)(.*)`),
 }
 
 func LogParserFunc(line string) (events.Event, int) {
 	ll := ParseToLogLine(line)
-	log.Println(ll.output)
-
 	if ll.output == "" {
 		return events.NilEvent, events.TypeNil
 	}
