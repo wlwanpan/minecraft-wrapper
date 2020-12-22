@@ -48,7 +48,7 @@ var wrapperFsmEvents = fsm.Events{
 	},
 }
 
-type StateChangeFunc func(events.Event, events.Event)
+type StateChangeFunc func(*Wrapper, events.Event, events.Event)
 
 type Wrapper struct {
 	machine        *fsm.FSM
@@ -92,7 +92,7 @@ func (w *Wrapper) newFSM() {
 
 func (w *Wrapper) triggerStateChangeCBs(from, to events.Event) {
 	for _, f := range w.stateChangeCBs {
-		f(from, to)
+		f(w, from, to)
 	}
 }
 

@@ -12,6 +12,7 @@ Wrapper is a go package that wraps a Minecraft Server and interacts with it by p
 
 ## Usage
 
+- Usage with default configs.
 ```go
 wpr := wrapper.NewDefaultWrapper("server.jar", 1024, 1024)
 wpr.Start()
@@ -24,6 +25,13 @@ for {
     log.Println(e.String())
   }
 }
+```
+
+- Listening to the `Wrapper` state changes.
+```go
+wpr.RegisterStateChangeCBs(func (w *wrapper.Wrapper, from events.Event, to events.Event) {
+	log.Printf("%s -> %s", from.String(), to.String())
+})
 ```
 
 ## Overview
