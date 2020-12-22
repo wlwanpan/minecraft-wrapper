@@ -30,16 +30,17 @@ func ParseToLogLine(line string) *LogLine {
 type LogParser func(string, int) (events.Event, int)
 
 var stateEventToRegexp = map[string]*regexp.Regexp{
-	events.Started: regexp.MustCompile(`Done (?s)(.*)! For help`),
-	events.Start:   regexp.MustCompile(`Starting minecraft server version (.*)`),
-	events.Stop:    regexp.MustCompile(`Stopping (.*) server`),
+	events.Started:  regexp.MustCompile(`Done (?s)(.*)! For help`),
+	events.Starting: regexp.MustCompile(`Starting minecraft server version (.*)`),
+	events.Stopping: regexp.MustCompile(`Stopping (.*) server`),
+	events.Saving:   regexp.MustCompile(`Saving the game`),
+	events.Saved:    regexp.MustCompile(`Saved (?s)(.*)`),
 }
 
 var gameEventToRegex = map[string]*regexp.Regexp{
 	events.PlayerJoined: regexp.MustCompile(`(?s)(.*) joined the game`),
 	events.PlayerLeft:   regexp.MustCompile(`(?s)(.*) left the game`),
 	events.TimeIs:       regexp.MustCompile(`The time is (?s)(.*)`),
-	events.Saved:        regexp.MustCompile(`Saved (?s)(.*)`),
 }
 
 func LogParserFunc(line string, t int) (events.Event, int) {

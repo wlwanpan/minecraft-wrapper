@@ -12,11 +12,12 @@ const (
 	ServerOnline   = "online"
 	ServerStarting = "starting"
 	ServerStopping = "stopping"
+	ServerSaving   = "saving"
 )
 
 var wrapperFsmEvents = fsm.Events{
 	fsm.EventDesc{
-		Name: events.Stop,
+		Name: events.Stopping,
 		Src:  []string{ServerOnline},
 		Dst:  ServerStopping,
 	},
@@ -26,13 +27,23 @@ var wrapperFsmEvents = fsm.Events{
 		Dst:  ServerOffline,
 	},
 	fsm.EventDesc{
-		Name: events.Start,
+		Name: events.Starting,
 		Src:  []string{ServerOffline},
 		Dst:  ServerStarting,
 	},
 	fsm.EventDesc{
 		Name: events.Started,
 		Src:  []string{ServerStarting},
+		Dst:  ServerOnline,
+	},
+	fsm.EventDesc{
+		Name: events.Saving,
+		Src:  []string{ServerOnline},
+		Dst:  ServerSaving,
+	},
+	fsm.EventDesc{
+		Name: events.Saved,
+		Src:  []string{ServerSaving},
 		Dst:  ServerOnline,
 	},
 }
@@ -169,4 +180,8 @@ func (w *Wrapper) Stop() error {
 // Kill the java process, use with caution since it will not trigger a save game.
 func (w *Wrapper) Kill() error {
 	return w.console.Kill()
+}
+
+func (w *Wrapper) Save() error {
+	return w.console.WriteCmd("save-all")
 }

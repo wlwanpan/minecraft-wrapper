@@ -8,7 +8,7 @@
 
 ## What is minecraft-wrapper?
 
-Wrapper is a go package that wraps a Minecraft Server and interacts with it by pushing in commands and reading the server logs. This package is meant to be used as an interface between a minecraft server and a go application/service. 
+Wrapper is a go package that wraps a Minecraft Server and interacts with it by pushing in commands and reading the server logs. This package is meant to be used as an interface between your minecraft server and your go application. 
 
 ## Usage
 
@@ -33,6 +33,10 @@ for {
 </p>
 
 If you are interested in learning about inner working of the wrapper, you can check out my [Medium article](https://levelup.gitconnected.com/lets-build-a-minecraft-server-wrapper-in-go-122c087e0023) for more details.
+
+## Minecraft resources
+
+- [Daylight cycle](https://minecraft.gamepedia.com/Daylight_cycle)
 
 ## Help and contributions
 

@@ -11,15 +11,16 @@ const (
 )
 
 const (
-	Started string = "started"
-	Stopped        = "stopped"
-	Start          = "start"
-	Stop           = "stop"
+	Started  string = "started"
+	Stopped         = "stopped"
+	Starting        = "starting"
+	Stopping        = "stopping"
+	Saving          = "saving"
+	Saved           = "saved"
 )
 
 const (
 	PlayerJoined string = "player-joined"
 	PlayerLeft          = "player-left"
 	TimeIs              = "time-is"
-	Saved               = "saved"
 )
