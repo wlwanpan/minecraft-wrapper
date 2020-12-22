@@ -26,11 +26,11 @@ func NewStateEvent(e string) StateEvent {
 }
 
 var (
-	NilEvent     StateEvent = NewStateEvent(Empty)
-	StartedEvent StateEvent = NewStateEvent(Started)
-	StoppedEvent StateEvent = NewStateEvent(Stopped)
-	StartEvent   StateEvent = NewStateEvent(Start)
-	StopEvent    StateEvent = NewStateEvent(Stop)
+	NilEvent      StateEvent = NewStateEvent(Empty)
+	StartedEvent  StateEvent = NewStateEvent(Started)
+	StoppedEvent  StateEvent = NewStateEvent(Stopped)
+	StartingEvent StateEvent = NewStateEvent(Starting)
+	StoppingEvent StateEvent = NewStateEvent(Stopping)
 )
 
 type GameEvent struct {
