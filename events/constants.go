@@ -27,4 +27,5 @@ const (
 	PlayerUUID          = "player-uuid"
 	PlayerSay           = "player-say"
 	TimeIs              = "time-is"
+	DataGet             = "data-get"
 )

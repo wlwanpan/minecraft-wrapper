@@ -12,7 +12,8 @@ const (
 	// MarketCloseTick is the mc time at which villagers end their workday
 	// and begin socializing, trading is not available at this point.
 	MarketCloseTick int64 = 9000
-	// Minecraft game server tick runs at a fixed rate of 20 ticks per second.
+	// GameTickPerSecond is the minecraft game server tick runs at a fixed
+	// rate of 20 ticks per second.
 	GameTickPerSecond int = 20
 
 	ClockSyncInterval = 5 * time.Second

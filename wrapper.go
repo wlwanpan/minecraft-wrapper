@@ -1,6 +1,7 @@
 package wrapper
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/looplab/fsm"
@@ -166,6 +167,12 @@ func (w *Wrapper) State() string {
 	return w.machine.Current()
 }
 
+// Tick returns the current minecraft game tick, which runs at a fixed rate
+// of 20 ticks per second, src: https://minecraft.gamepedia.com/Tick.
+func (w *Wrapper) Tick() int {
+	return w.clock.Tick
+}
+
 // Start will initialize the minecraft java process and start
 // orchestrating the wrapper machine.
 func (w *Wrapper) Start() error {
@@ -184,6 +191,12 @@ func (w *Wrapper) Kill() error {
 	return w.console.Kill()
 }
 
+// Save triggers a save game.
 func (w *Wrapper) Save() error {
 	return w.console.WriteCmd("save-all")
+}
+
+func (w *Wrapper) DataGet(t, id string) error {
+	cmd := fmt.Sprintf("data get %s %s", t, id)
+	return w.console.WriteCmd(cmd)
 }

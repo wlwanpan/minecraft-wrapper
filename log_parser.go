@@ -42,6 +42,7 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.PlayerUUID:   regexp.MustCompile(`UUID of player (?s)(.*) is (?s)(.*)`),
 	events.PlayerSay:    regexp.MustCompile(`<(?s)(.*)> (?s)(.*)`),
 	events.TimeIs:       regexp.MustCompile(`The time is (?s)(.*)`),
+	events.DataGet:      regexp.MustCompile(`(?s)(.*) has the following (entity|block|storage) data: (.*)`),
 }
 
 func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
@@ -67,6 +68,8 @@ func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 			return handlePlayerUUIDEvent(matches, tick)
 		case events.PlayerSay:
 			return handlePlayerSayEvent(matches, tick)
+		case events.DataGet:
+			return handleDataGet(matches, tick)
 		default:
 			gameEvent := events.NewGameEvent(e)
 			gameEvent.Tick = tick
@@ -102,4 +105,15 @@ func handlePlayerSayEvent(matches []string, tick int) (events.GameEvent, events.
 		"player_message": matches[2],
 	}
 	return psEvent, events.TypeGame
+}
+
+func handleDataGet(matches []string, tick int) (events.GameEvent, events.EventType) {
+	dgEvent := events.NewGameEvent(events.DataGet)
+	dgEvent.Tick = tick
+	dgEvent.Data = map[string]string{
+		"player_name": matches[1],
+		"data_type":   matches[2],
+		"data_raw":    matches[3], // TODO: Need to unmarshall str -> struct | interface{}
+	}
+	return dgEvent, events.TypeGame
 }
