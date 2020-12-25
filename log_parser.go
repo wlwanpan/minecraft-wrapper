@@ -1,7 +1,6 @@
 package wrapper
 
 import (
-	"log"
 	"regexp"
 	"strconv"
 
@@ -27,7 +26,7 @@ func ParseToLogLine(line string) *LogLine {
 	}
 }
 
-type LogParser func(string, int) (events.Event, int)
+type LogParser func(string, int) (events.Event, events.EventType)
 
 var stateEventToRegexp = map[string]*regexp.Regexp{
 	events.Started:  regexp.MustCompile(`Done (?s)(.*)! For help`),
@@ -40,10 +39,12 @@ var stateEventToRegexp = map[string]*regexp.Regexp{
 var gameEventToRegex = map[string]*regexp.Regexp{
 	events.PlayerJoined: regexp.MustCompile(`(?s)(.*) joined the game`),
 	events.PlayerLeft:   regexp.MustCompile(`(?s)(.*) left the game`),
+	events.PlayerUUID:   regexp.MustCompile(`UUID of player (?s)(.*) is (?s)(.*)`),
+	events.PlayerSay:    regexp.MustCompile(`<(?s)(.*)> (?s)(.*)`),
 	events.TimeIs:       regexp.MustCompile(`The time is (?s)(.*)`),
 }
 
-func LogParserFunc(line string, t int) (events.Event, int) {
+func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 	ll := ParseToLogLine(line)
 	if ll.output == "" {
 		return events.NilEvent, events.TypeNil
@@ -55,20 +56,50 @@ func LogParserFunc(line string, t int) (events.Event, int) {
 		}
 	}
 	for e, reg := range gameEventToRegex {
-		if reg.MatchString(ll.output) {
+		matches := reg.FindStringSubmatch(ll.output)
+		if matches == nil {
+			continue
+		}
+		switch e {
+		case events.TimeIs:
+			return handleTimeEvent(matches)
+		case events.PlayerUUID:
+			return handlePlayerUUIDEvent(matches, tick)
+		case events.PlayerSay:
+			return handlePlayerSayEvent(matches, tick)
+		default:
 			gameEvent := events.NewGameEvent(e)
-			gameEvent.Tick = t
-			if e == events.TimeIs {
-				tickStr := reg.FindStringSubmatch(ll.output)[1]
-				tick, err := strconv.Atoi(tickStr)
-				if err != nil {
-					log.Println("error parsing game tick: ", tickStr)
-				} else {
-					gameEvent.Tick = tick
-				}
-			}
+			gameEvent.Tick = tick
 			return gameEvent, events.TypeGame
 		}
 	}
 	return events.NilEvent, events.TypeNil
+}
+
+func handleTimeEvent(matches []string) (events.GameEvent, events.EventType) {
+	tickStr := matches[1]
+	tick, _ := strconv.Atoi(tickStr)
+	timeEvent := events.NewGameEvent(events.TimeIs)
+	timeEvent.Tick = tick
+	return timeEvent, events.TypeGame
+}
+
+func handlePlayerUUIDEvent(matches []string, tick int) (events.GameEvent, events.EventType) {
+	puEvent := events.NewGameEvent(events.PlayerUUID)
+	puEvent.Tick = tick
+	puEvent.Data = map[string]string{
+		"player_name": matches[1],
+		"player_uuid": matches[2],
+	}
+	return puEvent, events.TypeGame
+}
+
+func handlePlayerSayEvent(matches []string, tick int) (events.GameEvent, events.EventType) {
+	psEvent := events.NewGameEvent(events.PlayerSay)
+	psEvent.Tick = tick
+	psEvent.Data = map[string]string{
+		"player_name":    matches[1],
+		"player_message": matches[2],
+	}
+	return psEvent, events.TypeGame
 }

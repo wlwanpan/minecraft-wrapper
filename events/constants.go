@@ -1,9 +1,11 @@
 package events
 
+type EventType int
+
 const (
-	TypeNil   = iota
-	TypeState = iota
-	TypeGame  = iota
+	TypeNil   EventType = iota
+	TypeState EventType = iota
+	TypeGame  EventType = iota
 )
 
 const (
@@ -22,5 +24,7 @@ const (
 const (
 	PlayerJoined string = "player-joined"
 	PlayerLeft          = "player-left"
+	PlayerUUID          = "player-uuid"
+	PlayerSay           = "player-say"
 	TimeIs              = "time-is"
 )

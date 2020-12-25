@@ -37,6 +37,7 @@ type GameEvent struct {
 	id   int
 	name string
 	Tick int
+	Data map[string]string
 }
 
 func (ge GameEvent) String() string {

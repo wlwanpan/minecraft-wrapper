@@ -115,7 +115,7 @@ func (w *Wrapper) processLogEvents() {
 	}
 }
 
-func (w *Wrapper) parseLineToEvent(line string) (events.Event, int) {
+func (w *Wrapper) parseLineToEvent(line string) (events.Event, events.EventType) {
 	return w.parser(line, w.clock.Tick)
 }
 
@@ -126,7 +126,9 @@ func (w *Wrapper) updateState(ev events.Event) error {
 func (w *Wrapper) handleGameEvent(ev events.GameEvent) {
 	if ev.Is(events.TimeIsEvent) {
 		w.clock.syncTick(ev.Tick)
+		return
 	}
+
 	select {
 	case w.gameEventsChan <- ev:
 	default:
