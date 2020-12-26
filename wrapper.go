@@ -1,52 +1,82 @@
 package wrapper
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/looplab/fsm"
 	"github.com/wlwanpan/minecraft-wrapper/events"
 )
 
 const (
-	ServerOffline  = "offline"
-	ServerOnline   = "online"
-	ServerStarting = "starting"
-	ServerStopping = "stopping"
-	ServerSaving   = "saving"
+	WrapperOffline  = "offline"
+	WrapperOnline   = "online"
+	WrapperStarting = "starting"
+	WrapperStopping = "stopping"
+	WrapperSaving   = "saving"
+)
+
+var (
+	ErrWrapperResponseTimeout = errors.New("wrapper response timeout")
 )
 
 var wrapperFsmEvents = fsm.Events{
 	fsm.EventDesc{
 		Name: events.Stopping,
-		Src:  []string{ServerOnline},
-		Dst:  ServerStopping,
+		Src:  []string{WrapperOnline},
+		Dst:  WrapperStopping,
 	},
 	fsm.EventDesc{
 		Name: events.Stopped,
-		Src:  []string{ServerStopping},
-		Dst:  ServerOffline,
+		Src:  []string{WrapperStopping},
+		Dst:  WrapperOffline,
 	},
 	fsm.EventDesc{
 		Name: events.Starting,
-		Src:  []string{ServerOffline},
-		Dst:  ServerStarting,
+		Src:  []string{WrapperOffline},
+		Dst:  WrapperStarting,
 	},
 	fsm.EventDesc{
 		Name: events.Started,
-		Src:  []string{ServerStarting},
-		Dst:  ServerOnline,
+		Src:  []string{WrapperStarting},
+		Dst:  WrapperOnline,
 	},
 	fsm.EventDesc{
 		Name: events.Saving,
-		Src:  []string{ServerOnline},
-		Dst:  ServerSaving,
+		Src:  []string{WrapperOnline},
+		Dst:  WrapperSaving,
 	},
 	fsm.EventDesc{
 		Name: events.Saved,
-		Src:  []string{ServerSaving},
-		Dst:  ServerOnline,
+		Src:  []string{WrapperSaving},
+		Dst:  WrapperOnline,
 	},
+}
+
+type eventsQueue struct {
+	q map[string]chan events.GameEvent
+}
+
+func (eq *eventsQueue) get(e string) <-chan events.GameEvent {
+	_, ok := eq.q[e]
+	if !ok {
+		eq.q[e] = make(chan events.GameEvent)
+	}
+	return eq.q[e]
+}
+
+func (eq *eventsQueue) push(ev events.GameEvent) {
+	e := ev.String()
+	_, ok := eq.q[e]
+	if !ok {
+		eq.q[e] = make(chan events.GameEvent)
+	}
+	select {
+	case eq.q[e] <- ev:
+	default:
+	}
 }
 
 type StateChangeFunc func(*Wrapper, events.Event, events.Event)
@@ -56,6 +86,7 @@ type Wrapper struct {
 	console        Console
 	parser         LogParser
 	clock          *clock
+	eq             *eventsQueue
 	gameEventsChan chan (events.GameEvent)
 	stateChangeCBs []StateChangeFunc
 }
@@ -79,7 +110,7 @@ func NewWrapper(c Console, p LogParser) *Wrapper {
 
 func (w *Wrapper) newFSM() {
 	w.machine = fsm.NewFSM(
-		ServerOffline,
+		WrapperOffline,
 		wrapperFsmEvents,
 		fsm.Callbacks{
 			"enter_state": func(ev *fsm.Event) {
@@ -129,6 +160,10 @@ func (w *Wrapper) handleGameEvent(ev events.GameEvent) {
 		w.clock.syncTick(ev.Tick)
 		return
 	}
+	if ev.Is(events.DataGetEvent) {
+		w.eq.push(ev)
+		return
+	}
 
 	select {
 	case w.gameEventsChan <- ev:
@@ -142,6 +177,20 @@ func (w *Wrapper) processClock() {
 		<-w.clock.requestSync()
 		w.clock.resetLastSync()
 		w.console.WriteCmd("time query daytime")
+	}
+}
+
+func (w *Wrapper) processCmdResp(cmd, e string, timeout time.Duration) (events.Event, error) {
+	evChan := w.eq.get(e)
+	if err := w.console.WriteCmd(cmd); err != nil {
+		return events.NilEvent, err
+	}
+
+	select {
+	case <-time.After(timeout):
+		return events.NilEvent, ErrWrapperResponseTimeout
+	case ev := <-evChan:
+		return ev, nil
 	}
 }
 
@@ -195,7 +244,12 @@ func (w *Wrapper) Save() error {
 	return w.console.WriteCmd("save-all")
 }
 
-func (w *Wrapper) DataGet(t, id string) error {
+func (w *Wrapper) DataGet(t, id string) (*DataGetResponse, error) {
 	cmd := fmt.Sprintf("data get %s %s", t, id)
-	return w.console.WriteCmd(cmd)
+	ev, err := w.processCmdResp(cmd, events.DataGet, 1*time.Second)
+	if err != nil {
+		return nil, err
+	}
+	gev := ev.(events.GameEvent)
+	return strToDataGet(gev.Data["data_raw"])
 }

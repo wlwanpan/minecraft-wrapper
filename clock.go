@@ -17,7 +17,7 @@ const (
 	GameTickPerSecond int = 20
 	// ClockSyncInterval is the interval where the wrapper clock will sync with the
 	// game tick rate. The wrapper and game tick can be skewed when the game lags.
-	ClockSyncInterval time.Duration = 1 * time.Second
+	ClockSyncInterval time.Duration = 30 * time.Second
 )
 
 // clock represents an internal wrapper clock, meant to be always in sync

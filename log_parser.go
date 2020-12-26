@@ -113,7 +113,7 @@ func handleDataGet(matches []string, tick int) (events.GameEvent, events.EventTy
 	dgEvent.Data = map[string]string{
 		"player_name": matches[1],
 		"data_type":   matches[2],
-		"data_raw":    matches[3], // TODO: Need to unmarshall str -> struct | interface{}
+		"data_raw":    matches[3],
 	}
 	return dgEvent, events.TypeGame
 }
