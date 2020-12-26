@@ -62,12 +62,12 @@ func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 			continue
 		}
 		switch e {
-		case events.TimeIs:
-			return handleTimeEvent(matches)
 		case events.PlayerUUID:
 			return handlePlayerUUIDEvent(matches, tick)
 		case events.PlayerSay:
 			return handlePlayerSayEvent(matches, tick)
+		case events.TimeIs:
+			return handleTimeEvent(matches)
 		case events.DataGet:
 			return handleDataGet(matches, tick)
 		default:

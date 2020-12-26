@@ -55,7 +55,7 @@ type Wrapper struct {
 	machine        *fsm.FSM
 	console        Console
 	parser         LogParser
-	clock          *Clock
+	clock          *clock
 	gameEventsChan chan (events.GameEvent)
 	stateChangeCBs []StateChangeFunc
 }
@@ -70,7 +70,7 @@ func NewWrapper(c Console, p LogParser) *Wrapper {
 	wpr := &Wrapper{
 		console:        c,
 		parser:         p,
-		clock:          NewClock(),
+		clock:          newClock(),
 		gameEventsChan: make(chan events.GameEvent, 10),
 	}
 	wpr.newFSM()
@@ -137,12 +137,11 @@ func (w *Wrapper) handleGameEvent(ev events.GameEvent) {
 }
 
 func (w *Wrapper) processClock() {
+	w.clock.start()
 	for {
-		select {
-		case <-w.clock.requestSync():
-			w.clock.resetLastSync()
-			w.console.WriteCmd("time query daytime")
-		}
+		<-w.clock.requestSync()
+		w.clock.resetLastSync()
+		w.console.WriteCmd("time query daytime")
 	}
 }
 
