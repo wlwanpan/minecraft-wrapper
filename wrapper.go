@@ -59,6 +59,12 @@ type eventsQueue struct {
 	q map[string]chan events.GameEvent
 }
 
+func newEventsQueue() *eventsQueue {
+	return &eventsQueue{
+		q: make(map[string]chan events.GameEvent),
+	}
+}
+
 func (eq *eventsQueue) get(e string) <-chan events.GameEvent {
 	_, ok := eq.q[e]
 	if !ok {
@@ -82,6 +88,7 @@ func (eq *eventsQueue) push(ev events.GameEvent) {
 type StateChangeFunc func(*Wrapper, events.Event, events.Event)
 
 type Wrapper struct {
+	Version        string
 	machine        *fsm.FSM
 	console        Console
 	parser         LogParser
@@ -102,6 +109,7 @@ func NewWrapper(c Console, p LogParser) *Wrapper {
 		console:        c,
 		parser:         p,
 		clock:          newClock(),
+		eq:             newEventsQueue(),
 		gameEventsChan: make(chan events.GameEvent, 10),
 	}
 	wpr.newFSM()
@@ -139,7 +147,7 @@ func (w *Wrapper) processLogEvents() {
 		event, t := w.parseLineToEvent(line)
 		switch t {
 		case events.TypeState:
-			w.updateState(event)
+			w.updateState(event.(events.StateEvent))
 		case events.TypeGame:
 			w.handleGameEvent(event.(events.GameEvent))
 		default:
@@ -151,13 +159,17 @@ func (w *Wrapper) parseLineToEvent(line string) (events.Event, events.EventType)
 	return w.parser(line, w.clock.Tick)
 }
 
-func (w *Wrapper) updateState(ev events.Event) error {
+func (w *Wrapper) updateState(ev events.StateEvent) error {
 	return w.machine.Event(ev.String())
 }
 
 func (w *Wrapper) handleGameEvent(ev events.GameEvent) {
 	if ev.Is(events.TimeIsEvent) {
 		w.clock.syncTick(ev.Tick)
+		return
+	}
+	if ev.Is(events.VersionEvent) {
+		w.Version = ev.Data["version"]
 		return
 	}
 	if ev.Is(events.DataGetEvent) {
@@ -251,5 +263,8 @@ func (w *Wrapper) DataGet(t, id string) (*DataGetResponse, error) {
 		return nil, err
 	}
 	gev := ev.(events.GameEvent)
-	return strToDataGet(gev.Data["data_raw"])
+	rawData := []byte(gev.Data["data_raw"])
+	resp := &DataGetResponse{}
+	err = Decode(rawData, resp)
+	return resp, err
 }
