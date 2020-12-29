@@ -30,17 +30,18 @@ type LogParser func(string, int) (events.Event, events.EventType)
 
 var stateEventToRegexp = map[string]*regexp.Regexp{
 	events.Started:  regexp.MustCompile(`Done (?s)(.*)! For help`),
-	events.Starting: regexp.MustCompile(`Starting minecraft server version (.*)`),
+	events.Starting: regexp.MustCompile(`Starting Minecraft server on (.*)`),
 	events.Stopping: regexp.MustCompile(`Stopping (.*) server`),
 	events.Saving:   regexp.MustCompile(`Saving the game`),
 	events.Saved:    regexp.MustCompile(`Saved (?s)(.*)`),
 }
 
 var gameEventToRegex = map[string]*regexp.Regexp{
-	events.PlayerJoined: regexp.MustCompile(`(?s)(.*) joined the game`),
-	events.PlayerLeft:   regexp.MustCompile(`(?s)(.*) left the game`),
+	events.PlayerJoined: regexp.MustCompile(`(?s)(.*) joined the game`), // TODO: unhandled regex
+	events.PlayerLeft:   regexp.MustCompile(`(?s)(.*) left the game`),   // TODO: unhandled regex
 	events.PlayerUUID:   regexp.MustCompile(`UUID of player (?s)(.*) is (?s)(.*)`),
 	events.PlayerSay:    regexp.MustCompile(`<(?s)(.*)> (?s)(.*)`),
+	events.Version:      regexp.MustCompile(`Starting minecraft server version (.*)`),
 	events.TimeIs:       regexp.MustCompile(`The time is (?s)(.*)`),
 	events.DataGet:      regexp.MustCompile(`(?s)(.*) has the following (entity|block|storage) data: (.*)`),
 }
@@ -66,6 +67,8 @@ func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 			return handlePlayerUUIDEvent(matches, tick)
 		case events.PlayerSay:
 			return handlePlayerSayEvent(matches, tick)
+		case events.Version:
+			return handleVersionEvent(matches)
 		case events.TimeIs:
 			return handleTimeEvent(matches)
 		case events.DataGet:
@@ -77,14 +80,6 @@ func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 		}
 	}
 	return events.NilEvent, events.TypeNil
-}
-
-func handleTimeEvent(matches []string) (events.GameEvent, events.EventType) {
-	tickStr := matches[1]
-	tick, _ := strconv.Atoi(tickStr)
-	timeEvent := events.NewGameEvent(events.TimeIs)
-	timeEvent.Tick = tick
-	return timeEvent, events.TypeGame
 }
 
 func handlePlayerUUIDEvent(matches []string, tick int) (events.GameEvent, events.EventType) {
@@ -107,13 +102,29 @@ func handlePlayerSayEvent(matches []string, tick int) (events.GameEvent, events.
 	return psEvent, events.TypeGame
 }
 
+func handleVersionEvent(matches []string) (events.GameEvent, events.EventType) {
+	versionEvent := events.NewGameEvent(events.Version)
+	versionEvent.Data = map[string]string{
+		"version": matches[1],
+	}
+	return versionEvent, events.TypeGame
+}
+
+func handleTimeEvent(matches []string) (events.GameEvent, events.EventType) {
+	tickStr := matches[1]
+	tick, _ := strconv.Atoi(tickStr)
+	timeEvent := events.NewGameEvent(events.TimeIs)
+	timeEvent.Tick = tick
+	return timeEvent, events.TypeGame
+}
+
 func handleDataGet(matches []string, tick int) (events.GameEvent, events.EventType) {
 	dgEvent := events.NewGameEvent(events.DataGet)
 	dgEvent.Tick = tick
 	dgEvent.Data = map[string]string{
 		"player_name": matches[1],
 		"data_type":   matches[2],
-		"data_raw":    matches[3], // TODO: Need to unmarshall str -> struct | interface{}
+		"data_raw":    matches[3],
 	}
 	return dgEvent, events.TypeGame
 }
