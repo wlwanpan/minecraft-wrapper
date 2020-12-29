@@ -54,8 +54,10 @@ var specialEndSigChars = []byte{
 }
 
 var emptyChars = []byte{
-	',',
 	' ',
+	',',
+	'\n',
+	'\t',
 }
 
 func charIn(arr []byte, char byte) bool {
