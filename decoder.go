@@ -173,7 +173,9 @@ func (lxr *Lexer) buildStr(start string, endChar byte) (string, error) {
 	str := []byte(start)
 	for lxr.Next() {
 		char := lxr.Char()
-		if char == endChar {
+		// The raw data for the player UUID is as follows: { UUID: [I; INT, INT, INT, INT] }
+		// From the doc: "UUID of owner, stored as four ints.". Why the header 'I;' in the log???
+		if char == endChar || char == ';' {
 			break
 		}
 		str = append(str, char)
