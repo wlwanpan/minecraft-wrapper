@@ -37,8 +37,8 @@ var stateEventToRegexp = map[string]*regexp.Regexp{
 }
 
 var gameEventToRegex = map[string]*regexp.Regexp{
-	events.PlayerJoined:    regexp.MustCompile(`(?s)(.*) joined the game`), // TODO: unhandled regex
-	events.PlayerLeft:      regexp.MustCompile(`(?s)(.*) left the game`),   // TODO: unhandled regex
+	events.PlayerJoined:    regexp.MustCompile(`(?s)(.*) joined the game`),
+	events.PlayerLeft:      regexp.MustCompile(`(?s)(.*) left the game`),
 	events.PlayerUUID:      regexp.MustCompile(`UUID of player (?s)(.*) is (?s)(.*)`),
 	events.PlayerSay:       regexp.MustCompile(`<(?s)(.*)> (?s)(.*)`),
 	events.Version:         regexp.MustCompile(`Starting minecraft server version (.*)`),
@@ -64,6 +64,10 @@ func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 			continue
 		}
 		switch e {
+		case events.PlayerJoined:
+			return handlePlayerJoined(matches, tick)
+		case events.PlayerLeft:
+			return handlePlayerLeft(matches, tick)
 		case events.PlayerUUID:
 			return handlePlayerUUIDEvent(matches, tick)
 		case events.PlayerSay:
@@ -83,6 +87,24 @@ func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 		}
 	}
 	return events.NilEvent, events.TypeNil
+}
+
+func handlePlayerJoined(matches []string, tick int) (events.GameEvent, events.EventType) {
+	pjEvent := events.NewGameEvent(events.PlayerJoined)
+	pjEvent.Tick = tick
+	pjEvent.Data = map[string]string{
+		"player_name": matches[1],
+	}
+	return pjEvent, events.TypeGame
+}
+
+func handlePlayerLeft(matches []string, tick int) (events.GameEvent, events.EventType) {
+	plEvent := events.NewGameEvent(events.PlayerLeft)
+	plEvent.Tick = tick
+	plEvent.Data = map[string]string{
+		"player_name": matches[1],
+	}
+	return plEvent, events.TypeGame
 }
 
 func handlePlayerUUIDEvent(matches []string, tick int) (events.GameEvent, events.EventType) {
