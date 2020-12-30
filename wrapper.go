@@ -124,7 +124,7 @@ func (w *Wrapper) newFSM() {
 			"enter_state": func(ev *fsm.Event) {
 				srcEvent := events.NewStateEvent(ev.Src)
 				dstEvent := events.NewStateEvent(ev.Dst)
-				w.triggerStateChangeCBs(srcEvent, dstEvent)
+				go w.triggerStateChangeCBs(srcEvent, dstEvent)
 			},
 		},
 	)
@@ -192,16 +192,22 @@ func (w *Wrapper) processClock() {
 	}
 }
 
-func (w *Wrapper) processCmdResp(cmd, e string, timeout time.Duration) (events.Event, error) {
+func (w *Wrapper) processCmdResp(cmd, e string, timeout time.Duration) (events.GameEvent, error) {
 	evChan := w.eq.get(e)
 	if err := w.console.WriteCmd(cmd); err != nil {
-		return events.NilEvent, err
+		return events.NilGameEvent, err
 	}
 
 	select {
 	case <-time.After(timeout):
-		return events.NilEvent, ErrWrapperResponseTimeout
+		return events.NilGameEvent, ErrWrapperResponseTimeout
 	case ev := <-evChan:
+		errMessage, ok := ev.Data["error_message"]
+		if ok {
+			// If the game event carries an 'error_message' in its Data field,
+			// wrap and propagate the error message as an error.
+			return events.NilGameEvent, errors.New(errMessage)
+		}
 		return ev, nil
 	}
 }
@@ -269,9 +275,8 @@ func (w *Wrapper) DataGet(t, id string) (*DataGetOutput, error) {
 	if err != nil {
 		return nil, err
 	}
-	gev := ev.(events.GameEvent)
-	rawData := []byte(gev.Data["data_raw"])
+	rawData := []byte(ev.Data["data_raw"])
 	resp := &DataGetOutput{}
-	err = Decode(rawData, resp)
+	err = DecodeSNBT(rawData, resp)
 	return resp, err
 }

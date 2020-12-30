@@ -57,6 +57,7 @@ func NewGameEvent(e string) GameEvent {
 }
 
 var (
+	NilGameEvent GameEvent = NewGameEvent(Empty)
 	VersionEvent GameEvent = NewGameEvent(Version)
 	TimeIsEvent  GameEvent = NewGameEvent(TimeIs)
 	DataGetEvent GameEvent = NewGameEvent(DataGet)

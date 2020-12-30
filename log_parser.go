@@ -37,13 +37,14 @@ var stateEventToRegexp = map[string]*regexp.Regexp{
 }
 
 var gameEventToRegex = map[string]*regexp.Regexp{
-	events.PlayerJoined: regexp.MustCompile(`(?s)(.*) joined the game`), // TODO: unhandled regex
-	events.PlayerLeft:   regexp.MustCompile(`(?s)(.*) left the game`),   // TODO: unhandled regex
-	events.PlayerUUID:   regexp.MustCompile(`UUID of player (?s)(.*) is (?s)(.*)`),
-	events.PlayerSay:    regexp.MustCompile(`<(?s)(.*)> (?s)(.*)`),
-	events.Version:      regexp.MustCompile(`Starting minecraft server version (.*)`),
-	events.TimeIs:       regexp.MustCompile(`The time is (?s)(.*)`),
-	events.DataGet:      regexp.MustCompile(`(?s)(.*) has the following (entity|block|storage) data: (.*)`),
+	events.PlayerJoined:    regexp.MustCompile(`(?s)(.*) joined the game`), // TODO: unhandled regex
+	events.PlayerLeft:      regexp.MustCompile(`(?s)(.*) left the game`),   // TODO: unhandled regex
+	events.PlayerUUID:      regexp.MustCompile(`UUID of player (?s)(.*) is (?s)(.*)`),
+	events.PlayerSay:       regexp.MustCompile(`<(?s)(.*)> (?s)(.*)`),
+	events.Version:         regexp.MustCompile(`Starting minecraft server version (.*)`),
+	events.TimeIs:          regexp.MustCompile(`The time is (?s)(.*)`),
+	events.DataGet:         regexp.MustCompile(`(?s)(.*) has the following (entity|block|storage) data: (.*)`),
+	events.DataGetNoEntity: regexp.MustCompile(`No (entity|block|storage) was found`),
 }
 
 func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
@@ -72,7 +73,9 @@ func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 		case events.TimeIs:
 			return handleTimeEvent(matches)
 		case events.DataGet:
-			return handleDataGet(matches, tick)
+			return handleDataGet(matches)
+		case events.DataGetNoEntity:
+			return handleDataGetNoEntity(matches)
 		default:
 			gameEvent := events.NewGameEvent(e)
 			gameEvent.Tick = tick
@@ -118,13 +121,20 @@ func handleTimeEvent(matches []string) (events.GameEvent, events.EventType) {
 	return timeEvent, events.TypeGame
 }
 
-func handleDataGet(matches []string, tick int) (events.GameEvent, events.EventType) {
+func handleDataGet(matches []string) (events.GameEvent, events.EventType) {
 	dgEvent := events.NewGameEvent(events.DataGet)
-	dgEvent.Tick = tick
 	dgEvent.Data = map[string]string{
 		"player_name": matches[1],
 		"data_type":   matches[2],
 		"data_raw":    matches[3],
+	}
+	return dgEvent, events.TypeGame
+}
+
+func handleDataGetNoEntity(matches []string) (events.GameEvent, events.EventType) {
+	dgEvent := events.NewGameEvent(events.DataGet)
+	dgEvent.Data = map[string]string{
+		"error_message": matches[0],
 	}
 	return dgEvent, events.TypeGame
 }

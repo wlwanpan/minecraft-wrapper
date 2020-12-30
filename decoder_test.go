@@ -105,7 +105,7 @@ func TestFullDataGetDecode(t *testing.T) {
 	}
 
 	resp := &DataGetOutput{}
-	if err := Decode(testData, resp); err != nil {
+	if err := DecodeSNBT(testData, resp); err != nil {
 		t.Errorf("failed to decode testdata: %s", err)
 	}
 

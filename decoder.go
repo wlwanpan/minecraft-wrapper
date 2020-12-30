@@ -294,7 +294,7 @@ func (psr *Parser) buildArr() ([]interface{}, error) {
 	return arr, nil
 }
 
-func Decode(r []byte, s interface{}) error {
+func DecodeSNBT(r []byte, s interface{}) error {
 	lxr := NewLexer(r)
 	if err := lxr.Tokenize(); err != nil {
 		return err
