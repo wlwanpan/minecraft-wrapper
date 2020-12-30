@@ -68,6 +68,7 @@ All the folllowing commands/APIs are from the official [list of commands](https:
 - [ ] [DataModify](https://minecraft.gamepedia.com/Commands/data#modify)
 - [ ] [DataRemove](https://minecraft.gamepedia.com/Commands/data#remove)
 - [x] [SaveAll](https://minecraft.gamepedia.com/Commands/save#save-all)
+- [x] [Say](https://minecraft.gamepedia.com/Commands/say)
 - [x] [Start](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Start) (Unofficial)
 - [x] [State](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.State) - (Unofficial)
 - [x] [Stop](https://minecraft.gamepedia.com/Commands/stop)

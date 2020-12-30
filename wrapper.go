@@ -280,3 +280,7 @@ func (w *Wrapper) DataGet(t, id string) (*DataGetOutput, error) {
 	err = DecodeSNBT(rawData, resp)
 	return resp, err
 }
+
+func (w *Wrapper) Say(msg string) error {
+	return w.console.WriteCmd("say " + msg)
+}
