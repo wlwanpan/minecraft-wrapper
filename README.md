@@ -16,7 +16,7 @@ Wrapper is a go package (under construction :construction:) that wraps a Minecra
 ```go
 wpr := wrapper.NewDefaultWrapper("server.jar", 1024, 1024)
 wpr.Start()
-defer wrp.Stop()
+defer wpr.Stop()
 
 // Listening to game events...
 for {

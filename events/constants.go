@@ -25,10 +25,11 @@ const (
 // Game related events that provide player/server related information.
 const (
 	Version         string = "version"
-	PlayerJoined    string = "player-joined"
+	PlayerJoined           = "player-joined"
 	PlayerLeft             = "player-left"
 	PlayerUUID             = "player-uuid"
 	PlayerSay              = "player-say"
+	PlayerDied             = "player-died"
 	TimeIs                 = "time-is"
 	DataGet                = "data-get"
 	DataGetNoEntity        = "data-get-no-entity"

@@ -37,8 +37,10 @@ var stateEventToRegexp = map[string]*regexp.Regexp{
 }
 
 var gameEventToRegex = map[string]*regexp.Regexp{
-	events.PlayerJoined:    regexp.MustCompile(`(?s)(.*) joined the game`),
-	events.PlayerLeft:      regexp.MustCompile(`(?s)(.*) left the game`),
+	events.PlayerJoined: regexp.MustCompile(`(?s)(.*) joined the game`),
+	events.PlayerLeft:   regexp.MustCompile(`(?s)(.*) left the game`),
+	// TODO: There is an insane amount of death messages: https://minecraft.gamepedia.com/Death_messages, support all?
+	events.PlayerDied:      regexp.MustCompile(`(?s)(.*) (was shot|was pummeled|drowned|blew up|was blown up|was killed by|hit the ground|fell|was slain|suffocated)(.*)`),
 	events.PlayerUUID:      regexp.MustCompile(`UUID of player (?s)(.*) is (?s)(.*)`),
 	events.PlayerSay:       regexp.MustCompile(`<(?s)(.*)> (?s)(.*)`),
 	events.Version:         regexp.MustCompile(`Starting minecraft server version (.*)`),
@@ -68,6 +70,8 @@ func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 			return handlePlayerJoined(matches, tick)
 		case events.PlayerLeft:
 			return handlePlayerLeft(matches, tick)
+		case events.PlayerDied:
+			return handlePlayerDied(matches, tick)
 		case events.PlayerUUID:
 			return handlePlayerUUIDEvent(matches, tick)
 		case events.PlayerSay:
@@ -105,6 +109,20 @@ func handlePlayerLeft(matches []string, tick int) (events.GameEvent, events.Even
 		"player_name": matches[1],
 	}
 	return plEvent, events.TypeGame
+}
+
+func handlePlayerDied(matches []string, tick int) (events.GameEvent, events.EventType) {
+	pdEvent := events.NewGameEvent(events.PlayerDied)
+	pdEvent.Tick = tick
+	pdEvent.Data = map[string]string{
+		"player_name":   matches[1],
+		"death_by":      matches[2],
+		"death_details": "",
+	}
+	if len(matches) >= 4 {
+		pdEvent.Data["death_details"] = matches[3]
+	}
+	return pdEvent, events.TypeGame
 }
 
 func handlePlayerUUIDEvent(matches []string, tick int) (events.GameEvent, events.EventType) {
