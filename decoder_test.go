@@ -2,6 +2,7 @@ package wrapper
 
 import (
 	"io/ioutil"
+	"strings"
 	"testing"
 )
 
@@ -71,6 +72,28 @@ func TestParser(t *testing.T) {
 	}
 	if secondV.(float64) != 2.0 {
 		t.Errorf("'secondKey' value not properly set, actual=%f, expected=%f", secondV.(float64), 2.0)
+	}
+}
+
+func TestParserWithInvalidTokens(t *testing.T) {
+	testInvalidTokens := []Token{
+		{t: TTArrStart},
+		{t: TTArrStart},
+		{t: TTFloat, v: "123.1"},
+		{t: TTMapEnd},
+	}
+
+	psr := NewParser(testInvalidTokens)
+	_, err := psr.Parse()
+	if err == nil {
+		t.Error("parser failed to error out on invalid tokens")
+	}
+
+	if !strings.Contains(err.Error(), "invalid token") {
+		t.Error("parser return wrong error: ", err)
+	}
+	if !strings.Contains(err.Error(), "posn 3") {
+		t.Errorf("parser error failed to illegal char at posn 3")
 	}
 }
 
