@@ -1,6 +1,6 @@
 package wrapper
 
-type DataGetResponse struct {
+type DataGetOutput struct {
 	Brain                  Brain         `json:"Brain"`
 	HurtByTimestamp        int           `json:"HurtByTimestamp"`
 	SleepTimer             int           `json:"SleepTimer"`

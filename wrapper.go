@@ -251,12 +251,19 @@ func (w *Wrapper) Kill() error {
 	return w.console.Kill()
 }
 
-// Save triggers a save game.
-func (w *Wrapper) Save() error {
-	return w.console.WriteCmd("save-all")
+// SaveAll marks all chunks and player data to be saved to the data storage device.
+// When flush is true, the marked data are saved immediately.
+func (w *Wrapper) SaveAll(flush bool) error {
+	cmd := "save-all"
+	if flush {
+		cmd += " flush"
+	}
+	return w.console.WriteCmd(cmd)
 }
 
-func (w *Wrapper) DataGet(t, id string) (*DataGetResponse, error) {
+// DataGet returns the Go struct representation of an 'entity' or 'block' or 'storage'.
+// The data is originally stored in a NBT format.
+func (w *Wrapper) DataGet(t, id string) (*DataGetOutput, error) {
 	cmd := fmt.Sprintf("data get %s %s", t, id)
 	ev, err := w.processCmdResp(cmd, events.DataGet, 1*time.Second)
 	if err != nil {
@@ -264,7 +271,7 @@ func (w *Wrapper) DataGet(t, id string) (*DataGetResponse, error) {
 	}
 	gev := ev.(events.GameEvent)
 	rawData := []byte(gev.Data["data_raw"])
-	resp := &DataGetResponse{}
+	resp := &DataGetOutput{}
 	err = Decode(rawData, resp)
 	return resp, err
 }

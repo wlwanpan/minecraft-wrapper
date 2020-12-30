@@ -42,7 +42,7 @@ func TestFullDataGetDecode(t *testing.T) {
 		return
 	}
 
-	resp := &DataGetResponse{}
+	resp := &DataGetOutput{}
 	if err := Decode(testData, resp); err != nil {
 		t.Errorf("failed to decode testdata: %s", err)
 	}

@@ -8,7 +8,7 @@
 
 ## What is minecraft-wrapper?
 
-Wrapper is a go package under construction :construction: that wraps a Minecraft Server and interacts with it by pushing in commands and reading the server logs. This package is meant to be used as an interface between your minecraft server and your go application. 
+Wrapper is a go package (under construction :construction:) that wraps a Minecraft Server (JE) and interacts with it by pushing in commands and reading the server logs. This package is meant to be used as an interface between your minecraft server and your go application. 
 
 ## Usage
 
@@ -34,16 +34,16 @@ wpr.RegisterStateChangeCBs(func (w *wrapper.Wrapper, from events.Event, to event
 })
 ```
 
-- Retrieving a player position:
+- Retrieving a player position from the [`/data get`](https://minecraft.gamepedia.com/Commands/data#get) command:
 ```go
-resp, err := wpr.DataGet("entity", PLAYER_NAME|PLAYER_UUID)
+out, err := wpr.DataGet("entity", PLAYER_NAME|PLAYER_UUID)
 if err != nil {
 	...
 }
-fmt.Println(resp.Pos) // [PLAYER_X, PLAYER_Y, PLAYER_Z]
+fmt.Println(out.Pos) // [PLAYER_X, PLAYER_Y, PLAYER_Z]
 ```
 
-This package was developed/tested for Minecraft 1.16, though the basic functionality should work across all version. APIs like `wrapper.DataGet` was introduce as from 1.13 but not tested :warning: 
+:warning: This package was developed/tested for Minecraft 1.16, though the basic functionality should work across all version. APIs like `wrapper.DataGet` was introduce as from 1.13 but not tested. :warning: 
 
 ## Overview
 
@@ -52,6 +52,29 @@ This package was developed/tested for Minecraft 1.16, though the basic functiona
 </p>
 
 If you are interested in learning the basic inner working of the wrapper, you can check out my [Medium article](https://levelup.gitconnected.com/lets-build-a-minecraft-server-wrapper-in-go-122c087e0023) for more details.
+
+## Commands
+
+All the folllowing commands/APIs are from the official [list of commands](https://minecraft.gamepedia.com/Commands#List_and_summary_of_commands) unless otherwise specified.
+
+- [ ] [Attributes](https://minecraft.gamepedia.com/Commands/attribute)
+- [ ] [Advancement](https://minecraft.gamepedia.com/Commands/advancement)
+- [ ] [Ban](https://minecraft.gamepedia.com/Commands/ban)
+- [ ] [BanIp](https://minecraft.gamepedia.com/Commands/ban#ban-ip)
+- [ ] [BanList](https://minecraft.gamepedia.com/Commands/ban#banlist)
+- [ ] [Bossbar](https://minecraft.gamepedia.com/Commands/bossbar)
+- [x] [DataGet](https://minecraft.gamepedia.com/Commands/data#get)
+- [ ] [DataMerge](https://minecraft.gamepedia.com/Commands/data#merge)
+- [ ] [DataModify](https://minecraft.gamepedia.com/Commands/data#modify)
+- [ ] [DataRemove](https://minecraft.gamepedia.com/Commands/data#remove)
+- [x] [SaveAll](https://minecraft.gamepedia.com/Commands/save#save-all)
+- [x] [Start](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Start) (Unofficial)
+- [x] [State](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.State) - (Unofficial)
+- [x] [Stop](https://minecraft.gamepedia.com/Commands/stop)
+- [x] [Kill](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Kill) - Terminates the Java Process (Unofficial)
+- [x] [Tick](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Tick) (Unofficial)
+
+More incoming...
 
 ## Minecraft resources
 
