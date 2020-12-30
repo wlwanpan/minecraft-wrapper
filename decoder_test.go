@@ -35,6 +35,45 @@ func TestLexer(t *testing.T) {
 	}
 }
 
+func TestParser(t *testing.T) {
+	testTokens := []Token{
+		{t: TTArrStart},
+		{t: TTMapStart},
+		{t: TTStr, v: "firstKey"},
+		{t: TTFloat, v: "1.0"},
+		{t: TTStr, v: "secondKey"},
+		{t: TTFloat, v: "2.0"},
+		{t: TTMapEnd},
+		{t: TTArrEnd},
+	}
+
+	psr := NewParser(testTokens)
+	outInter, err := psr.Parse()
+	if err != nil {
+		t.Error("failed to parse test tokens: ", err)
+	}
+	out := outInter.([]interface{})
+	if len(out) != 1 {
+		t.Errorf("expected a parsed arr of length 1, got %d", len(out))
+	}
+	firstEl := out[0].(map[string]interface{})
+	firstV, ok := firstEl["firstKey"]
+	if !ok {
+		t.Error("missing 'firstKey' from parsed output")
+	}
+	if firstV.(float64) != 1.0 {
+		t.Errorf("'firstKey' value not properly set, actual=%f, expected=%f", firstV.(float64), 1.0)
+	}
+
+	secondV, ok := firstEl["secondKey"]
+	if !ok {
+		t.Error("missing 'secondKey' from parsed output")
+	}
+	if secondV.(float64) != 2.0 {
+		t.Errorf("'secondKey' value not properly set, actual=%f, expected=%f", secondV.(float64), 2.0)
+	}
+}
+
 func TestFullDataGetDecode(t *testing.T) {
 	testData, err := ioutil.ReadFile("testdata/data_get_entity.txt")
 	if err != nil {
