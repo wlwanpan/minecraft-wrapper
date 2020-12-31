@@ -244,6 +244,16 @@ func (w *Wrapper) SaveAll(flush bool) error {
 	return w.console.WriteCmd(cmd)
 }
 
+// SaveOn enables automatic saving. The server is allowed to write to the world files.
+func (w *Wrapper) SaveOn() error {
+	return w.console.WriteCmd("save-on")
+}
+
+// SaveOff disables automatic saving by preventing the server from writing to the world files.
+func (w *Wrapper) SaveOff() error {
+	return w.console.WriteCmd("save-off")
+}
+
 // Say sends the given message in the minecraft in-game chat.
 func (w *Wrapper) Say(msg string) error {
 	return w.console.WriteCmd("say " + msg)

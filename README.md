@@ -94,6 +94,8 @@ All the following methods/commands are from the official [list of commands](http
 - [ ] [GameMode](https://minecraft.gamepedia.com/Commands/gamemode)
 - [ ] [GameRule](https://minecraft.gamepedia.com/Commands/gamerule)
 - [x] [SaveAll](https://minecraft.gamepedia.com/Commands/save#save-all)
+- [x] [SaveOff](https://minecraft.gamepedia.com/Commands/save#save-off)
+- [x] [SaveOn](https://minecraft.gamepedia.com/Commands/save#save-on)
 - [x] [Say](https://minecraft.gamepedia.com/Commands/say)
 - [x] [Seed](https://minecraft.gamepedia.com/Commands/seed)
 - [x] [Start](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Start) (Unofficial)
