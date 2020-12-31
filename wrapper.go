@@ -148,8 +148,13 @@ func (w *Wrapper) processLogEvents() {
 		switch t {
 		case events.TypeState:
 			w.updateState(event.(events.StateEvent))
+		case events.TypeCmd:
+			w.handleCmdEvent(event.(events.GameEvent))
 		case events.TypeGame:
-			w.handleGameEvent(event.(events.GameEvent))
+			select {
+			case w.gameEventsChan <- event.(events.GameEvent):
+			default:
+			}
 		default:
 		}
 	}
@@ -163,7 +168,7 @@ func (w *Wrapper) updateState(ev events.StateEvent) error {
 	return w.machine.Event(ev.String())
 }
 
-func (w *Wrapper) handleGameEvent(ev events.GameEvent) {
+func (w *Wrapper) handleCmdEvent(ev events.GameEvent) {
 	if ev.Is(events.TimeIsEvent) {
 		w.clock.syncTick(ev.Tick)
 		return
@@ -172,15 +177,7 @@ func (w *Wrapper) handleGameEvent(ev events.GameEvent) {
 		w.Version = ev.Data["version"]
 		return
 	}
-	if ev.Is(events.DataGetEvent) {
-		w.eq.push(ev)
-		return
-	}
-
-	select {
-	case w.gameEventsChan <- ev:
-	default:
-	}
+	w.eq.push(ev)
 }
 
 func (w *Wrapper) processClock() {
@@ -192,7 +189,7 @@ func (w *Wrapper) processClock() {
 	}
 }
 
-func (w *Wrapper) processCmdResp(cmd, e string, timeout time.Duration) (events.GameEvent, error) {
+func (w *Wrapper) processCmdToEvent(cmd, e string, timeout time.Duration) (events.GameEvent, error) {
 	evChan := w.eq.get(e)
 	if err := w.console.WriteCmd(cmd); err != nil {
 		return events.NilGameEvent, err
@@ -271,7 +268,7 @@ func (w *Wrapper) SaveAll(flush bool) error {
 // The data is originally stored in a NBT format.
 func (w *Wrapper) DataGet(t, id string) (*DataGetOutput, error) {
 	cmd := fmt.Sprintf("data get %s %s", t, id)
-	ev, err := w.processCmdResp(cmd, events.DataGet, 1*time.Second)
+	ev, err := w.processCmdToEvent(cmd, events.DataGet, 3*time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -281,6 +278,19 @@ func (w *Wrapper) DataGet(t, id string) (*DataGetOutput, error) {
 	return resp, err
 }
 
+// Say sends the given message in the minecraft in-game chat.
 func (w *Wrapper) Say(msg string) error {
 	return w.console.WriteCmd("say " + msg)
+}
+
+// Seed returns the world seed.
+func (w *Wrapper) Seed() (int, error) {
+	ev, err := w.processCmdToEvent("seed", events.Seed, 1*time.Second)
+	if err != nil {
+		return 0, err
+	}
+	rawData := []byte(ev.Data["data_raw"])
+	resp := []int{}
+	err = DecodeSNBT(rawData, &resp)
+	return resp[0], err
 }

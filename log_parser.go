@@ -47,6 +47,7 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.TimeIs:          regexp.MustCompile(`The time is (?s)(.*)`),
 	events.DataGet:         regexp.MustCompile(`(?s)(.*) has the following (entity|block|storage) data: (.*)`),
 	events.DataGetNoEntity: regexp.MustCompile(`No (entity|block|storage) was found`),
+	events.Seed:            regexp.MustCompile(`Seed: (.*)`),
 }
 
 func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
@@ -84,6 +85,8 @@ func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 			return handleDataGet(matches)
 		case events.DataGetNoEntity:
 			return handleDataGetNoEntity(matches)
+		case events.Seed:
+			return handleSeed(matches)
 		default:
 			gameEvent := events.NewGameEvent(e)
 			gameEvent.Tick = tick
@@ -150,7 +153,7 @@ func handleVersionEvent(matches []string) (events.GameEvent, events.EventType) {
 	versionEvent.Data = map[string]string{
 		"version": matches[1],
 	}
-	return versionEvent, events.TypeGame
+	return versionEvent, events.TypeCmd
 }
 
 func handleTimeEvent(matches []string) (events.GameEvent, events.EventType) {
@@ -158,7 +161,7 @@ func handleTimeEvent(matches []string) (events.GameEvent, events.EventType) {
 	tick, _ := strconv.Atoi(tickStr)
 	timeEvent := events.NewGameEvent(events.TimeIs)
 	timeEvent.Tick = tick
-	return timeEvent, events.TypeGame
+	return timeEvent, events.TypeCmd
 }
 
 func handleDataGet(matches []string) (events.GameEvent, events.EventType) {
@@ -168,7 +171,7 @@ func handleDataGet(matches []string) (events.GameEvent, events.EventType) {
 		"data_type":   matches[2],
 		"data_raw":    matches[3],
 	}
-	return dgEvent, events.TypeGame
+	return dgEvent, events.TypeCmd
 }
 
 func handleDataGetNoEntity(matches []string) (events.GameEvent, events.EventType) {
@@ -176,5 +179,13 @@ func handleDataGetNoEntity(matches []string) (events.GameEvent, events.EventType
 	dgEvent.Data = map[string]string{
 		"error_message": matches[0],
 	}
-	return dgEvent, events.TypeGame
+	return dgEvent, events.TypeCmd
+}
+
+func handleSeed(matches []string) (events.GameEvent, events.EventType) {
+	sdEvent := events.NewGameEvent(events.Seed)
+	sdEvent.Data = map[string]string{
+		"data_raw": matches[1],
+	}
+	return sdEvent, events.TypeCmd
 }

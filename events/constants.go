@@ -5,6 +5,7 @@ type EventType int
 const (
 	TypeNil   EventType = iota
 	TypeState EventType = iota
+	TypeCmd   EventType = iota
 	TypeGame  EventType = iota
 )
 
@@ -33,4 +34,5 @@ const (
 	TimeIs                 = "time-is"
 	DataGet                = "data-get"
 	DataGetNoEntity        = "data-get-no-entity"
+	Seed                   = "seed"
 )
