@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/looplab/fsm"
@@ -226,43 +227,8 @@ func (w *Wrapper) RegisterStateChangeCBs(cbs ...StateChangeFunc) {
 	w.stateChangeCBs = append(w.stateChangeCBs, cbs...)
 }
 
-// State returns the current state of the server, it can be one of:
-// 'offline', 'online', 'starting' or 'stopping'.
-func (w *Wrapper) State() string {
-	return w.machine.Current()
-}
-
-// Tick returns the current minecraft game tick, which runs at a fixed rate
-// of 20 ticks per second, src: https://minecraft.gamepedia.com/Tick.
-func (w *Wrapper) Tick() int {
-	return w.clock.Tick
-}
-
-// Start will initialize the minecraft java process and start
-// orchestrating the wrapper machine.
-func (w *Wrapper) Start() error {
-	go w.processLogEvents()
-	go w.processClock()
-	return w.console.Start()
-}
-
-// Stop pipes a 'stop' command to the minecraft java process.
-func (w *Wrapper) Stop() error {
-	return w.console.WriteCmd("stop")
-}
-
-// Kill the java process, use with caution since it will not trigger a save game.
-func (w *Wrapper) Kill() error {
-	return w.console.Kill()
-}
-
-// SaveAll marks all chunks and player data to be saved to the data storage device.
-// When flush is true, the marked data are saved immediately.
-func (w *Wrapper) SaveAll(flush bool) error {
-	cmd := "save-all"
-	if flush {
-		cmd += " flush"
-	}
+func (w *Wrapper) Ban(player, reason string) error {
+	cmd := strings.Join([]string{"ban", player, reason}, " ")
 	return w.console.WriteCmd(cmd)
 }
 
@@ -278,6 +244,22 @@ func (w *Wrapper) DataGet(t, id string) (*DataGetOutput, error) {
 	resp := &DataGetOutput{}
 	err = DecodeSNBT(rawData, resp)
 	return resp, err
+}
+
+// DefaultGameMode sets the default game mode for new players joining.
+func (w *Wrapper) DefaultGameMode(mode GameMode) error {
+	cmd := fmt.Sprintf("defaultgamemode %s", mode)
+	return w.console.WriteCmd(cmd)
+}
+
+// SaveAll marks all chunks and player data to be saved to the data storage device.
+// When flush is true, the marked data are saved immediately.
+func (w *Wrapper) SaveAll(flush bool) error {
+	cmd := "save-all"
+	if flush {
+		cmd += " flush"
+	}
+	return w.console.WriteCmd(cmd)
 }
 
 // Say sends the given message in the minecraft in-game chat.
@@ -298,4 +280,34 @@ func (w *Wrapper) Seed() (int, error) {
 		return 0, ErrWrapperFailedToParseSeed
 	}
 	return resp[0], err
+}
+
+// Start will initialize the minecraft java process and start
+// orchestrating the wrapper machine.
+func (w *Wrapper) Start() error {
+	go w.processLogEvents()
+	go w.processClock()
+	return w.console.Start()
+}
+
+// State returns the current state of the server, it can be one of:
+// 'offline', 'online', 'starting' or 'stopping'.
+func (w *Wrapper) State() string {
+	return w.machine.Current()
+}
+
+// Stop pipes a 'stop' command to the minecraft java process.
+func (w *Wrapper) Stop() error {
+	return w.console.WriteCmd("stop")
+}
+
+// Kill the java process, use with caution since it will not trigger a save game.
+func (w *Wrapper) Kill() error {
+	return w.console.Kill()
+}
+
+// Tick returns the current minecraft game tick, which runs at a fixed rate
+// of 20 ticks per second, src: https://minecraft.gamepedia.com/Tick.
+func (w *Wrapper) Tick() int {
+	return w.clock.Tick
 }

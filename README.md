@@ -59,7 +59,7 @@ All the folllowing commands/APIs are from the official [list of commands](https:
 
 - [ ] [Attributes](https://minecraft.gamepedia.com/Commands/attribute)
 - [ ] [Advancement](https://minecraft.gamepedia.com/Commands/advancement)
-- [ ] [Ban](https://minecraft.gamepedia.com/Commands/ban)
+- [x] [Ban](https://minecraft.gamepedia.com/Commands/ban)
 - [ ] [BanIp](https://minecraft.gamepedia.com/Commands/ban#ban-ip)
 - [ ] [BanList](https://minecraft.gamepedia.com/Commands/ban#banlist)
 - [ ] [Bossbar](https://minecraft.gamepedia.com/Commands/bossbar)
@@ -67,6 +67,7 @@ All the folllowing commands/APIs are from the official [list of commands](https:
 - [ ] [DataMerge](https://minecraft.gamepedia.com/Commands/data#merge)
 - [ ] [DataModify](https://minecraft.gamepedia.com/Commands/data#modify)
 - [ ] [DataRemove](https://minecraft.gamepedia.com/Commands/data#remove)
+- [ ] [DefaultGameMode](https://minecraft.gamepedia.com/Commands/defaultgamemode)
 - [x] [SaveAll](https://minecraft.gamepedia.com/Commands/save#save-all)
 - [x] [Say](https://minecraft.gamepedia.com/Commands/say)
 - [x] [Seed](https://minecraft.gamepedia.com/Commands/seed)

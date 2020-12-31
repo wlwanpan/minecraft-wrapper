@@ -48,6 +48,8 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.DataGet:         regexp.MustCompile(`(?s)(.*) has the following (entity|block|storage) data: (.*)`),
 	events.DataGetNoEntity: regexp.MustCompile(`No (entity|block|storage) was found`),
 	events.Seed:            regexp.MustCompile(`Seed: (.*)`),
+	events.DefaultGameMode: regexp.MustCompile(`The default game mode is now (Survival|Creative|Adventure|Spectator) Mode`),
+	events.Banned:          regexp.MustCompile(`Banned (?s)(.*): (?s)(.*)`),
 }
 
 func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
@@ -87,6 +89,10 @@ func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 			return handleDataGetNoEntity(matches)
 		case events.Seed:
 			return handleSeed(matches)
+		case events.DefaultGameMode:
+			return handleDefaultGameMode(matches)
+		case events.Banned:
+			return handleBanned(matches)
 		default:
 			gameEvent := events.NewGameEvent(e)
 			gameEvent.Tick = tick
@@ -188,4 +194,21 @@ func handleSeed(matches []string) (events.GameEvent, events.EventType) {
 		"data_raw": matches[1],
 	}
 	return sdEvent, events.TypeCmd
+}
+
+func handleDefaultGameMode(matches []string) (events.GameEvent, events.EventType) {
+	gmEvent := events.NewGameEvent(events.DefaultGameMode)
+	gmEvent.Data = map[string]string{
+		"default_game_mode": matches[1],
+	}
+	return gmEvent, events.TypeGame
+}
+
+func handleBanned(matches []string) (events.GameEvent, events.EventType) {
+	bnEvent := events.NewGameEvent(events.Banned)
+	bnEvent.Data = map[string]string{
+		"player_name": matches[1],
+		"reason":      matches[2],
+	}
+	return bnEvent, events.TypeGame
 }

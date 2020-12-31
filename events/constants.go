@@ -35,4 +35,6 @@ const (
 	DataGet                = "data-get"
 	DataGetNoEntity        = "data-get-no-entity"
 	Seed                   = "seed"
+	DefaultGameMode        = "default-game-mode"
+	Banned                 = "banned"
 )
