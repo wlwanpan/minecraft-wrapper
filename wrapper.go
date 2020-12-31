@@ -20,9 +20,10 @@ const (
 )
 
 var (
+	// ErrWrapperResponseTimeout is returned when a command fails to receive
+	// its respective event from the server logs within some timeframe. Hence
+	// no output could be decoded for the command.
 	ErrWrapperResponseTimeout = errors.New("response timeout")
-
-	ErrWrapperFailedToParseSeed = errors.New("failed to parse seed")
 )
 
 var wrapperFsmEvents = fsm.Events{
@@ -60,7 +61,13 @@ var wrapperFsmEvents = fsm.Events{
 
 type StateChangeFunc func(*Wrapper, events.Event, events.Event)
 
+// Wrapper is the minecraft-wrapper core struct, representing an instance
+// of a minecraft server (JE). It is used to manage and interact with the
+// java process by proxying its stdin and stdout via the Console interface.
 type Wrapper struct {
+	// Version is the minecraft server version being wrapped.
+	// The Version is detected and set from the log line:
+	// "Starting minecraft server version [X.X.X]""
 	Version        string
 	machine        *fsm.FSM
 	console        Console
@@ -268,9 +275,6 @@ func (w *Wrapper) Seed() (int, error) {
 	rawData := []byte(ev.Data["data_raw"])
 	resp := []int{}
 	err = DecodeSNBT(rawData, &resp)
-	if len(resp) < 1 {
-		return 0, ErrWrapperFailedToParseSeed
-	}
 	return resp[0], err
 }
 
