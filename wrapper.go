@@ -58,36 +58,6 @@ var wrapperFsmEvents = fsm.Events{
 	},
 }
 
-type eventsQueue struct {
-	q map[string]chan events.GameEvent
-}
-
-func newEventsQueue() *eventsQueue {
-	return &eventsQueue{
-		q: make(map[string]chan events.GameEvent),
-	}
-}
-
-func (eq *eventsQueue) get(e string) <-chan events.GameEvent {
-	_, ok := eq.q[e]
-	if !ok {
-		eq.q[e] = make(chan events.GameEvent)
-	}
-	return eq.q[e]
-}
-
-func (eq *eventsQueue) push(ev events.GameEvent) {
-	e := ev.String()
-	_, ok := eq.q[e]
-	if !ok {
-		eq.q[e] = make(chan events.GameEvent)
-	}
-	select {
-	case eq.q[e] <- ev:
-	default:
-	}
-}
-
 type StateChangeFunc func(*Wrapper, events.Event, events.Event)
 
 type Wrapper struct {
