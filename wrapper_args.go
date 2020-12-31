@@ -2,9 +2,18 @@ package wrapper
 
 type GameMode string
 
-var (
-	SurvivalGameMode  GameMode = "survival"
-	CreativeGameMode  GameMode = "creative"
-	AdventureGameMode GameMode = "adventure"
-	SpectatorGameMode GameMode = "spectator"
+const (
+	Survival  GameMode = "survival"
+	Creative  GameMode = "creative"
+	Adventure GameMode = "adventure"
+	Spectator GameMode = "spectator"
+)
+
+type GameDifficulty string
+
+const (
+	Easy     GameDifficulty = "easy"
+	Hard     GameDifficulty = "hard"
+	Normal   GameDifficulty = "normal"
+	Peaceful GameDifficulty = "peaceful"
 )

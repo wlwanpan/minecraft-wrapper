@@ -3,6 +3,7 @@ package wrapper
 import (
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/wlwanpan/minecraft-wrapper/events"
 )
@@ -37,19 +38,21 @@ var stateEventToRegexp = map[string]*regexp.Regexp{
 }
 
 var gameEventToRegex = map[string]*regexp.Regexp{
-	events.PlayerJoined: regexp.MustCompile(`(?s)(.*) joined the game`),
-	events.PlayerLeft:   regexp.MustCompile(`(?s)(.*) left the game`),
-	// TODO: There is an insane amount of death messages: https://minecraft.gamepedia.com/Death_messages, support all?
-	events.PlayerDied:      regexp.MustCompile(`(?s)(.*) (was shot|was pummeled|drowned|blew up|was blown up|was killed by|hit the ground|fell|was slain|suffocated)(.*)`),
-	events.PlayerUUID:      regexp.MustCompile(`UUID of player (?s)(.*) is (?s)(.*)`),
-	events.PlayerSay:       regexp.MustCompile(`<(?s)(.*)> (?s)(.*)`),
-	events.Version:         regexp.MustCompile(`Starting minecraft server version (.*)`),
-	events.TimeIs:          regexp.MustCompile(`The time is (?s)(.*)`),
+	events.Banned:          regexp.MustCompile(`Banned (?s)(.*): (?s)(.*)`),
 	events.DataGet:         regexp.MustCompile(`(?s)(.*) has the following (entity|block|storage) data: (.*)`),
 	events.DataGetNoEntity: regexp.MustCompile(`No (entity|block|storage) was found`),
-	events.Seed:            regexp.MustCompile(`Seed: (.*)`),
 	events.DefaultGameMode: regexp.MustCompile(`The default game mode is now (Survival|Creative|Adventure|Spectator) Mode`),
-	events.Banned:          regexp.MustCompile(`Banned (?s)(.*): (?s)(.*)`),
+	events.Difficulty:      regexp.MustCompile(`The difficulty (?s)(.*)`),
+	// TODO: There is an insane amount of death messages: https://minecraft.gamepedia.com/Death_messages, support all?
+	events.PlayerDied:       regexp.MustCompile(`(?s)(.*) (was shot|was pummeled|drowned|blew up|was blown up|was killed by|hit the ground|fell|was slain|suffocated)(.*)`),
+	events.PlayerJoined:     regexp.MustCompile(`(?s)(.*) joined the game`),
+	events.PlayerLeft:       regexp.MustCompile(`(?s)(.*) left the game`),
+	events.PlayerUUID:       regexp.MustCompile(`UUID of player (?s)(.*) is (?s)(.*)`),
+	events.PlayerSay:        regexp.MustCompile(`<(?s)(.*)> (?s)(.*)`),
+	events.Seed:             regexp.MustCompile(`Seed: (.*)`),
+	events.ServerOverloaded: regexp.MustCompile(`Can't keep up! Is the server overloaded? Running 2007ms or 40 ticks behind`),
+	events.TimeIs:           regexp.MustCompile(`The time is (?s)(.*)`),
+	events.Version:          regexp.MustCompile(`Starting minecraft server version (.*)`),
 }
 
 func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
@@ -69,6 +72,8 @@ func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 			continue
 		}
 		switch e {
+		case events.Difficulty:
+			return handleDifficulty(matches)
 		case events.PlayerJoined:
 			return handlePlayerJoined(matches, tick)
 		case events.PlayerLeft:
@@ -100,6 +105,15 @@ func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 		}
 	}
 	return events.NilEvent, events.TypeNil
+}
+
+func handleDifficulty(matches []string) (events.GameEvent, events.EventType) {
+	dfEvent := events.NewGameEvent(events.Difficulty)
+	dfEvent.Data = map[string]string{}
+	if strings.Contains(matches[1], "did not change") {
+		dfEvent.Data["error_message"] = matches[0]
+	}
+	return dfEvent, events.TypeCmd
 }
 
 func handlePlayerJoined(matches []string, tick int) (events.GameEvent, events.EventType) {

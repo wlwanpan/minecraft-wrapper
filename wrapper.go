@@ -222,6 +222,18 @@ func (w *Wrapper) DefaultGameMode(mode GameMode) error {
 	return w.console.WriteCmd(cmd)
 }
 
+// DeOp removes a given player from the operator list.
+func (w *Wrapper) DeOp(player string) error {
+	return w.console.WriteCmd("deop " + player)
+}
+
+// Difficulty changes the game difficulty level of the world.
+func (w *Wrapper) Difficulty(d GameDifficulty) error {
+	cmd := fmt.Sprintf("difficulty %s", d)
+	_, err := w.processCmdToEvent(cmd, events.Difficulty, 1*time.Second)
+	return err
+}
+
 // SaveAll marks all chunks and player data to be saved to the data storage device.
 // When flush is true, the marked data are saved immediately.
 func (w *Wrapper) SaveAll(flush bool) error {
