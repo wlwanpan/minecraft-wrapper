@@ -19,7 +19,9 @@ const (
 )
 
 var (
-	ErrWrapperResponseTimeout = errors.New("wrapper response timeout")
+	ErrWrapperResponseTimeout = errors.New("response timeout")
+
+	ErrWrapperFailedToParseSeed = errors.New("failed to parse seed")
 )
 
 var wrapperFsmEvents = fsm.Events{
@@ -292,5 +294,8 @@ func (w *Wrapper) Seed() (int, error) {
 	rawData := []byte(ev.Data["data_raw"])
 	resp := []int{}
 	err = DecodeSNBT(rawData, &resp)
+	if len(resp) < 1 {
+		return 0, ErrWrapperFailedToParseSeed
+	}
 	return resp[0], err
 }
