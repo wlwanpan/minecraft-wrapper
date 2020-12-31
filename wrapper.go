@@ -212,10 +212,10 @@ func (w *Wrapper) processCmdToEvent(cmd, e string, timeout time.Duration) (event
 	}
 }
 
-// GameEvents returns a read channel with any game events like:
-// - Player joined
-// - Player left
-// - Player sent a message and so on.
+// GameEvents returns a receive-only channel of game related event. For example:
+// - Player joined, left, died, was banned.
+// - Game updates like game mode changes.
+// - Player sends messages...
 func (w *Wrapper) GameEvents() <-chan events.GameEvent {
 	return w.gameEventsChan
 }
