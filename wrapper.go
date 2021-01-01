@@ -10,6 +10,7 @@ import (
 
 	"github.com/looplab/fsm"
 	"github.com/wlwanpan/minecraft-wrapper/events"
+	"github.com/wlwanpan/minecraft-wrapper/snbt"
 )
 
 const (
@@ -265,7 +266,9 @@ func (w *Wrapper) DataGet(t, id string) (*DataGetOutput, error) {
 	}
 	rawData := []byte(ev.Data["data_raw"])
 	resp := &DataGetOutput{}
-	err = DecodeSNBT(rawData, resp)
+	if err = snbt.Decode(rawData, resp); err != nil {
+		return nil, err
+	}
 	return resp, err
 }
 
@@ -320,7 +323,7 @@ func (w *Wrapper) Seed() (int, error) {
 	}
 	rawData := []byte(ev.Data["data_raw"])
 	resp := []int{}
-	err = DecodeSNBT(rawData, &resp)
+	err = snbt.Decode(rawData, &resp)
 	return resp[0], err
 }
 
