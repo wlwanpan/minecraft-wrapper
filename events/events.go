@@ -35,13 +35,13 @@ var (
 
 type GameEvent struct {
 	id   int
-	name string
+	Name string
 	Tick int
 	Data map[string]string
 }
 
 func (ge GameEvent) String() string {
-	return ge.name
+	return ge.Name
 }
 
 func (ge GameEvent) Is(e Event) bool {
@@ -52,7 +52,7 @@ func NewGameEvent(e string) GameEvent {
 	gameEventCount++
 	return GameEvent{
 		id:   gameEventCount,
-		name: e,
+		Name: e,
 	}
 }
 

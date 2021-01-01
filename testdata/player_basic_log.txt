@@ -1,0 +1,12 @@
+[14:13:15] [User Authenticator #1/INFO]: UUID of player player1 is player-1-uuid
+[14:13:15] [Server thread/INFO]: player1[/192.168.1.77:48490] logged in with entity id 246 at (181.8583533939447, 79.0, 122.5012226438664)
+[14:13:15] [Server thread/INFO]: player1 joined the game
+[14:13:38] [User Authenticator #2/INFO]: UUID of player player2 is player-2-uuid
+[14:13:38] [Server thread/INFO]: player2[/192.168.1.69:50090] logged in with entity id 286 at (206.9361702585916, 102.0, 105.54811130250235)
+[14:13:38] [Server thread/INFO]: player2 joined the game
+[14:37:57] [Server thread/INFO]: player2 fell from a high place
+[17:24:27] [Server thread/INFO]: player1 was killed by Witch using magic
+[17:57:17] [Server thread/INFO]: player1 lost connection: Disconnected
+[17:57:17] [Server thread/INFO]: player1 left the game
+[17:57:20] [Server thread/INFO]: player2 lost connection: Disconnected
+[17:57:20] [Server thread/INFO]: player2 left the game
