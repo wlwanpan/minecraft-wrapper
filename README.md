@@ -9,7 +9,7 @@
 
 ## What is minecraft-wrapper?
 
-Wrapper is a go package that wraps a Minecraft Server (JE) and interacts with it by pushing in commands and reading the server logs. This package is meant to be used as an interface between your minecraft server and your go application.
+Wrapper is a Go package that wraps a Minecraft Server (JE) and interacts with it by pushing in commands and reading the server logs. This package is meant to provide nicer APIs for your Go program to manage and command your minecraft server.
 
 ## Installation
 
@@ -34,13 +34,6 @@ for {
 }
 ```
 
-- Listening to the `Wrapper` state changes:
-```go
-wpr.RegisterStateChangeCBs(func (w *wrapper.Wrapper, from events.Event, to events.Event) {
-	log.Printf("%s -> %s", from.String(), to.String())
-})
-```
-
 - Retrieving a player position from the [`/data get`](https://minecraft.gamepedia.com/Commands/data#get) command:
 ```go
 out, err := wpr.DataGet("entity", PLAYER_NAME|PLAYER_UUID)
@@ -57,6 +50,13 @@ if err := wpr.SaveAll(true); err != nil {
 }
 ```
 
+- Listening to the `Wrapper` state changes:
+```go
+wpr.RegisterStateChangeCBs(func (w *wrapper.Wrapper, from events.Event, to events.Event) {
+	log.Printf("%s -> %s", from.String(), to.String())
+})
+```
+
 Note: This package is developed and tested on Minecraft 1.16, though most functionalities (`Start`, `Stop`, `Seed`, ...) works across all versions. Commands like `/data get` was introduced in version 1.13 and might not work for earlier versions. :warning: 
 
 ## Overview
@@ -69,7 +69,7 @@ If you are interested in learning the basic inner working of the wrapper, you ca
 
 ## Commands :construction:
 
-All the following methods/commands are from the official [list of commands](https://minecraft.gamepedia.com/Commands#List_and_summary_of_commands) unless otherwise specified.
+The following apis/commands are from the official minecraft gamepedia [list of commands](https://minecraft.gamepedia.com/Commands#List_and_summary_of_commands) unless otherwise specified.
 
 - [ ] [Attributes](https://minecraft.gamepedia.com/Commands/attribute)
 - [ ] [Advancement](https://minecraft.gamepedia.com/Commands/advancement)
@@ -90,21 +90,43 @@ All the following methods/commands are from the official [list of commands](http
 - [ ] [Fill](https://minecraft.gamepedia.com/Commands/fill)
 - [ ] [ForceLoad](https://minecraft.gamepedia.com/Commands/forceload)
 - [ ] [Function](https://minecraft.gamepedia.com/Commands/function)
-- [x] [GameEvents](https://pkg.go.dev/github.com/wlwanpan/minecraft-wrapper#Wrapper.GameEvents) (Unofficial)
+- [x] [GameEvents](https://pkg.go.dev/github.com/wlwanpan/minecraft-wrapper#Wrapper.GameEvents) - Returns a receive-only GameEvent chan(Unofficial)
 - [ ] [GameMode](https://minecraft.gamepedia.com/Commands/gamemode)
 - [ ] [GameRule](https://minecraft.gamepedia.com/Commands/gamerule)
+- [x] [Kill](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Kill) - Terminates the Java Process (Unofficial)
 - [x] [SaveAll](https://minecraft.gamepedia.com/Commands/save#save-all)
 - [x] [SaveOff](https://minecraft.gamepedia.com/Commands/save#save-off)
 - [x] [SaveOn](https://minecraft.gamepedia.com/Commands/save#save-on)
 - [x] [Say](https://minecraft.gamepedia.com/Commands/say)
+- [ ] [Schedule](https://minecraft.gamepedia.com/Commands/scoreboard)
+- [ ] [Scoreboard](https://minecraft.gamepedia.com/Commands/scoreboard)
 - [x] [Seed](https://minecraft.gamepedia.com/Commands/seed)
 - [x] [Start](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Start) (Unofficial)
-- [x] [State](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.State) - (Unofficial)
+- [ ] [SetBlock](https://minecraft.gamepedia.com/Commands/setblock)
+- [ ] [SetIdleTime](https://minecraft.gamepedia.com/Commands/setidletimeout)
+- [ ] [SetWorldSpawn](https://minecraft.gamepedia.com/Commands/setworldspawn)
+- [ ] [SpawnPoint](https://minecraft.gamepedia.com/Commands/spawnpoint)
+- [ ] [Spectate](https://minecraft.gamepedia.com/Commands/spectate)
+- [ ] [SpreadPlayers](https://minecraft.gamepedia.com/Commands/spreadplayers)
+- [x] [State](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.State) - Returns the current state of the Wrapper (Unofficial)
 - [x] [Stop](https://minecraft.gamepedia.com/Commands/stop)
-- [x] [Kill](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Kill) - Terminates the Java Process (Unofficial)
-- [x] [Tick](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Tick) (Unofficial)
+- [ ] [StopSound](https://minecraft.gamepedia.com/Commands/stopsound)
+- [ ] [Summon](https://minecraft.gamepedia.com/Commands/summon)
+- [ ] [Tag](https://minecraft.gamepedia.com/Commands/tag)
+- [ ] [Team](https://minecraft.gamepedia.com/Commands/team)
+- [ ] [TeamMsg](https://minecraft.gamepedia.com/Commands/teammsg)
+- [ ] [Teleport](https://minecraft.gamepedia.com/Commands/teleport)
+- [ ] [Tell](https://minecraft.gamepedia.com/Commands/tell)
+- [ ] [TellRaw](https://minecraft.gamepedia.com/Commands/tellraw)
+- [x] [Tick](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Tick) - Returns the running game tick (Unofficial)
+- [ ] [Title](https://minecraft.gamepedia.com/Commands/title)
+- [ ] [Trigger](https://minecraft.gamepedia.com/Commands/trigger)
+- [ ] [Weather](https://minecraft.gamepedia.com/Commands/weather)
+- [ ] [Whitelist](https://minecraft.gamepedia.com/Commands/whitelist)
+- [ ] [WorldBorder](https://minecraft.gamepedia.com/Commands/worldborder)
+- [ ] [Xp](https://minecraft.gamepedia.com/Commands/xp)
 
-This list might be incomplete...
+Note: this list might be incomplete...
 
 ## Minecraft resources
 
