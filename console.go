@@ -12,14 +12,14 @@ type Console interface {
 	ReadLine() (string, error)
 }
 
-type ConsoleImpl struct {
+type defaultConsole struct {
 	cmd    JavaExec
 	stdout *bufio.Reader
 	stdin  *bufio.Writer
 }
 
-func NewConsole(cmd JavaExec) *ConsoleImpl {
-	c := &ConsoleImpl{
+func newConsole(cmd JavaExec) *defaultConsole {
+	c := &defaultConsole{
 		cmd: cmd,
 	}
 
@@ -28,15 +28,15 @@ func NewConsole(cmd JavaExec) *ConsoleImpl {
 	return c
 }
 
-func (c *ConsoleImpl) Start() error {
+func (c *defaultConsole) Start() error {
 	return c.cmd.Start()
 }
 
-func (c *ConsoleImpl) Kill() error {
+func (c *defaultConsole) Kill() error {
 	return c.cmd.Kill()
 }
 
-func (c *ConsoleImpl) WriteCmd(cmd string) error {
+func (c *defaultConsole) WriteCmd(cmd string) error {
 	wrappedCmd := fmt.Sprintf("%s\r\n", cmd)
 	_, err := c.stdin.WriteString(wrappedCmd)
 	if err != nil {
@@ -45,6 +45,6 @@ func (c *ConsoleImpl) WriteCmd(cmd string) error {
 	return c.stdin.Flush()
 }
 
-func (c *ConsoleImpl) ReadLine() (string, error) {
+func (c *defaultConsole) ReadLine() (string, error) {
 	return c.stdout.ReadString('\n')
 }

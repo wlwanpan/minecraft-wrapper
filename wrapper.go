@@ -80,9 +80,9 @@ type Wrapper struct {
 }
 
 func NewDefaultWrapper(server string, initial, max int) *Wrapper {
-	cmd := JavaExecCmd(server, initial, max)
-	console := NewConsole(cmd)
-	return NewWrapper(console, LogParserFunc)
+	cmd := javaExecCmd(server, initial, max)
+	console := newConsole(cmd)
+	return NewWrapper(console, logParserFunc)
 }
 
 func NewWrapper(c Console, p LogParser) *Wrapper {

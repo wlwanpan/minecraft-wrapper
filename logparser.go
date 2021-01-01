@@ -8,26 +8,26 @@ import (
 	"github.com/wlwanpan/minecraft-wrapper/events"
 )
 
-var logRegex = regexp.MustCompile(`(\[[0-9:]*\]) \[([A-z(-| )#0-9]*)\/([A-z #]*)\]: (.*)`)
+type LogParser func(string, int) (events.Event, events.EventType)
 
-type LogLine struct {
+type logLine struct {
 	timestamp  string
 	threadName string
 	level      string
 	output     string
 }
 
-func ParseToLogLine(line string) *LogLine {
+var logRegex = regexp.MustCompile(`(\[[0-9:]*\]) \[([A-z(-| )#0-9]*)\/([A-z #]*)\]: (.*)`)
+
+func parseToLogLine(line string) *logLine {
 	matches := logRegex.FindAllStringSubmatch(line, 4)
-	return &LogLine{
+	return &logLine{
 		timestamp:  matches[0][1],
 		threadName: matches[0][2],
 		level:      matches[0][3],
 		output:     matches[0][4],
 	}
 }
-
-type LogParser func(string, int) (events.Event, events.EventType)
 
 var stateEventToRegexp = map[string]*regexp.Regexp{
 	events.Started:  regexp.MustCompile(`Done (?s)(.*)! For help`),
@@ -57,8 +57,8 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.Version:          regexp.MustCompile(`Starting minecraft server version (.*)`),
 }
 
-func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
-	ll := ParseToLogLine(line)
+func logParserFunc(line string, tick int) (events.Event, events.EventType) {
+	ll := parseToLogLine(line)
 	if ll.output == "" {
 		return events.NilEvent, events.TypeNil
 	}
