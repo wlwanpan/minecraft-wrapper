@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 	"time"
 
@@ -189,6 +190,37 @@ func (w *Wrapper) processCmdToEvent(cmd, e string, timeout time.Duration) (event
 	}
 }
 
+func (w *Wrapper) processCmdToEventArr(cmd, e string, timeout time.Duration) ([]events.GameEvent, error) {
+	evChan := w.eq.get(e)
+	if err := w.console.WriteCmd(cmd); err != nil {
+		return nil, err
+	}
+
+	expectedEventsCount := 1
+	events := []events.GameEvent{}
+	for {
+		select {
+		case ev := <-evChan:
+			entryType := ev.Data["entry_type"]
+			if entryType == "header" {
+				c, ok := ev.Data["entry_count"]
+				if !ok {
+					return events, nil
+				}
+				expectedEventsCount, _ = strconv.Atoi(c)
+				break
+			}
+
+			events = append(events, ev)
+			if len(events) >= expectedEventsCount {
+				return events, nil
+			}
+		case <-time.After(timeout):
+			return events, ErrWrapperResponseTimeout
+		}
+	}
+}
+
 // GameEvents returns a receive-only channel of game related event. For example:
 // - Player joined, left, died, was banned.
 // - Game updates like game mode changes.
@@ -207,6 +239,20 @@ func (w *Wrapper) RegisterStateChangeCBs(cbs ...StateChangeFunc) {
 func (w *Wrapper) Ban(player, reason string) error {
 	cmd := strings.Join([]string{"ban", player, reason}, " ")
 	return w.console.WriteCmd(cmd)
+}
+
+func (w *Wrapper) BanList(t BanListType) ([]string, error) {
+	cmd := fmt.Sprintf("banlist %s", t)
+	evs, err := w.processCmdToEventArr(cmd, events.BanList, 10*time.Second)
+	if err != nil {
+		return nil, err
+	}
+
+	banList := []string{}
+	for _, ev := range evs {
+		banList = append(banList, ev.Data["entry_name"])
+	}
+	return banList, nil
 }
 
 // DataGet returns the Go struct representation of an 'entity' or 'block' or 'storage'.

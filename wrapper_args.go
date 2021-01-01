@@ -17,3 +17,10 @@ const (
 	Normal   GameDifficulty = "normal"
 	Peaceful GameDifficulty = "peaceful"
 )
+
+type BanListType string
+
+const (
+	BanIPs     BanListType = "ips"
+	BanPlayers BanListType = "players"
+)

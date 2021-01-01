@@ -39,6 +39,8 @@ var stateEventToRegexp = map[string]*regexp.Regexp{
 
 var gameEventToRegex = map[string]*regexp.Regexp{
 	events.Banned:          regexp.MustCompile(`Banned (?s)(.*): (?s)(.*)`),
+	events.BanList:         regexp.MustCompile(`There are (no|\d+) bans(:|\z)`),
+	events.BanListEntry:    regexp.MustCompile(`(?s)(.*) was banned by Server: (.*)`),
 	events.DataGet:         regexp.MustCompile(`(?s)(.*) has the following (entity|block|storage) data: (.*)`),
 	events.DataGetNoEntity: regexp.MustCompile(`No (entity|block|storage) was found`),
 	events.DefaultGameMode: regexp.MustCompile(`The default game mode is now (Survival|Creative|Adventure|Spectator) Mode`),
@@ -72,6 +74,10 @@ func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 			continue
 		}
 		switch e {
+		case events.BanList:
+			return handleBanList(matches)
+		case events.BanListEntry:
+			return handleBanListEntry(matches)
 		case events.Difficulty:
 			return handleDifficulty(matches)
 		case events.PlayerJoined:
@@ -105,6 +111,28 @@ func LogParserFunc(line string, tick int) (events.Event, events.EventType) {
 		}
 	}
 	return events.NilEvent, events.TypeNil
+}
+
+func handleBanList(matches []string) (events.GameEvent, events.EventType) {
+	blEvent := events.NewGameEvent(events.BanList)
+	blEvent.Data = map[string]string{
+		"entry_type": "header",
+	}
+	if matches[1] != "no" {
+		// This indicates that there are entries to report back...
+		blEvent.Data["entry_count"] = matches[1]
+	}
+	return blEvent, events.TypeCmd
+}
+
+func handleBanListEntry(matches []string) (events.GameEvent, events.EventType) {
+	bleEvent := events.NewGameEvent(events.BanList)
+	bleEvent.Data = map[string]string{
+		"entry_type": "item",
+		"entry_name": matches[1],
+		"reason":     matches[2],
+	}
+	return bleEvent, events.TypeCmd
 }
 
 func handleDifficulty(matches []string) (events.GameEvent, events.EventType) {

@@ -75,7 +75,7 @@ All the following methods/commands are from the official [list of commands](http
 - [ ] [Advancement](https://minecraft.gamepedia.com/Commands/advancement)
 - [x] [Ban](https://minecraft.gamepedia.com/Commands/ban)
 - [ ] [BanIp](https://minecraft.gamepedia.com/Commands/ban#ban-ip)
-- [ ] [BanList](https://minecraft.gamepedia.com/Commands/ban#banlist)
+- [x] [BanList](https://minecraft.gamepedia.com/Commands/ban#banlist)
 - [ ] [Bossbar](https://minecraft.gamepedia.com/Commands/bossbar)
 - [x] [DataGet](https://minecraft.gamepedia.com/Commands/data#get)
 - [ ] [DataMerge](https://minecraft.gamepedia.com/Commands/data#merge)

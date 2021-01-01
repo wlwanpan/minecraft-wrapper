@@ -26,6 +26,8 @@ const (
 // Game related events that provide player/server related information.
 const (
 	Banned           string = "banned"
+	BanList                 = "ban-list"
+	BanListEntry            = "ban-list-entry"
 	DataGet                 = "data-get"
 	DataGetNoEntity         = "data-get-no-entity"
 	DefaultGameMode         = "default-game-mode"
