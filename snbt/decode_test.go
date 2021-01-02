@@ -6,7 +6,7 @@ import (
 )
 
 func TestFullDataGetDecode(t *testing.T) {
-	testData, err := ioutil.ReadFile("testdata/data_get_entity.txt")
+	testData, err := ioutil.ReadFile("testdata/data_get_entity")
 	if err != nil {
 		t.Errorf("failed to load testdata: %s", err)
 		return

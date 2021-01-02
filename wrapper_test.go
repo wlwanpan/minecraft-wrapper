@@ -1,48 +1,12 @@
 package wrapper
 
 import (
-	"bufio"
-	"io"
-	"os"
 	"testing"
 	"time"
 )
 
-type testConsole struct {
-	scnr *bufio.Scanner
-}
-
-func (tc *testConsole) Start() error {
-	return nil
-}
-
-func (tc *testConsole) Kill() error {
-	return nil
-}
-
-func (tc *testConsole) WriteCmd(c string) error {
-	return nil
-}
-
-func (tc *testConsole) ReadLine() (string, error) {
-	if tc.scnr.Scan() {
-		return tc.scnr.Text(), nil
-	}
-	return "", io.EOF
-}
-
-func newTestConsole(filename string) (*testConsole, error) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	return &testConsole{
-		scnr: bufio.NewScanner(file),
-	}, nil
-}
-
 func TestWrapperStart(t *testing.T) {
-	c, err := newTestConsole("testdata/server_start_log.txt")
+	c, err := newTestConsole("testdata/server_start_log")
 	if err != nil {
 		t.Errorf("failed to load test file: %w", err)
 		return
@@ -53,13 +17,12 @@ func TestWrapperStart(t *testing.T) {
 		t.Errorf("wrapper should be 'offline', got %s", wpr.State())
 	}
 
-	started, err := wpr.StartAndWait()
-	if err != nil {
+	if err := wpr.Start(); err != nil {
 		t.Error(err)
 		return
 	}
 	select {
-	case <-started:
+	case <-wpr.Loaded():
 	case <-time.After(1 * time.Second):
 		t.Error("wrapper timeout, failed to start")
 	}
@@ -71,5 +34,35 @@ func TestWrapperStart(t *testing.T) {
 	expectedDetectedVersion := "1.16.4"
 	if wpr.Version != expectedDetectedVersion {
 		t.Errorf("wrapper version be %s, got %s", expectedDetectedVersion, wpr.Version)
+	}
+}
+
+func TestWrapperOffline(t *testing.T) {
+	c, err := newTestConsole("testdata/server_start_log")
+	if err != nil {
+		t.Errorf("failed to load test file: %w", err)
+		return
+	}
+
+	wpr := NewWrapper(c, logParserFunc)
+	if wpr.State() != WrapperOffline {
+		t.Errorf("wrapper should be 'offline', got %s", wpr.State())
+	}
+
+	// test simple entry command (no output expected).
+	if err := wpr.Ban("player-1", "reason-1"); err == nil {
+		t.Error("wrapper.Ban should error when 'offline'")
+	}
+
+	// test single entry command (with expected output).
+	_, err = wpr.DataGet("entity", "player-1")
+	if err == nil {
+		t.Error("wrapper.DataGet should error when 'offline'")
+	}
+
+	// test list entry command (with output parsing multiple log lines).
+	_, err = wpr.BanList(BanPlayers)
+	if err == nil {
+		t.Error("wrapper.BanList should error when 'offline'")
 	}
 }

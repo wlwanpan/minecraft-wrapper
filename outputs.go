@@ -1,5 +1,9 @@
 package wrapper
 
+// DataGetOutput represents the structured data logged from the
+// '/data get entity' command. Some fields might not be of the
+// right or precise type since the decoder will coerse any value
+// to either a string, int or float64 for simplicity.
 type DataGetOutput struct {
 	Brain                  Brain         `json:"Brain"`
 	HurtByTimestamp        int           `json:"HurtByTimestamp"`

@@ -26,6 +26,10 @@ var (
 	// its respective event from the server logs within some timeframe. Hence
 	// no output could be decoded for the command.
 	ErrWrapperResponseTimeout = errors.New("response timeout")
+	// ErrWrapperNotOnline is returned when a commad is called but the wrapper
+	// is not 'online'. The minecraft server is not loaded and ready to process
+	// any commands.
+	ErrWrapperNotOnline = errors.New("not online")
 )
 
 var wrapperFsmEvents = fsm.Events{
@@ -61,8 +65,6 @@ var wrapperFsmEvents = fsm.Events{
 	},
 }
 
-type StateChangeFunc func(*Wrapper, events.Event, events.Event)
-
 // Wrapper is the minecraft-wrapper core struct, representing an instance
 // of a minecraft server (JE). It is used to manage and interact with the
 // java process by proxying its stdin and stdout via the Console interface.
@@ -77,9 +79,12 @@ type Wrapper struct {
 	clock          *clock
 	eq             *eventsQueue
 	gameEventsChan chan (events.GameEvent)
-	startedChan    chan bool
+	loadedChan     chan bool
 }
 
+// NewDefaultWrapper returns a new instance of the Wrapper. This is
+// the main method to use for your wrapper but if you wish to read
+// and parse your own log lines to events, see 'NewWrapper'. This
 func NewDefaultWrapper(server string, initial, max int) *Wrapper {
 	cmd := javaExecCmd(server, initial, max)
 	console := newConsole(cmd)
@@ -93,7 +98,7 @@ func NewWrapper(c Console, p LogParser) *Wrapper {
 		clock:          newClock(),
 		eq:             newEventsQueue(),
 		gameEventsChan: make(chan events.GameEvent, 10),
-		startedChan:    make(chan bool, 1),
+		loadedChan:     make(chan bool, 1),
 	}
 	wpr.newFSM()
 	return wpr
@@ -104,9 +109,12 @@ func (w *Wrapper) newFSM() {
 		WrapperOffline,
 		wrapperFsmEvents,
 		fsm.Callbacks{
-			"enter_state": func(ev *fsm.Event) {
-				if ev.Src == WrapperStarting && ev.Dst == WrapperOnline {
-					w.startedChan <- true
+			"enter_online": func(ev *fsm.Event) {
+				if ev.Src == WrapperStarting {
+					select {
+					case w.loadedChan <- true:
+					default:
+					}
 				}
 			},
 		},
@@ -157,21 +165,28 @@ func (w *Wrapper) handleCmdEvent(ev events.GameEvent) {
 	w.eq.push(ev)
 }
 
+func (w *Wrapper) writeToConsole(cmd string) error {
+	if w.State() != WrapperOnline {
+		return ErrWrapperNotOnline
+	}
+	return w.console.WriteCmd(cmd)
+}
+
 func (w *Wrapper) processClock() {
 	w.clock.start()
 	for {
 		<-w.clock.requestSync()
 		w.clock.resetLastSync()
-		w.console.WriteCmd("time query daytime")
+		w.writeToConsole("time query daytime")
 	}
 }
 
 func (w *Wrapper) processCmdToEvent(cmd, e string, timeout time.Duration) (events.GameEvent, error) {
 	evChan := w.eq.get(e)
-	if err := w.console.WriteCmd(cmd); err != nil {
+	if err := w.writeToConsole(cmd); err != nil {
 		return events.NilGameEvent, err
-	}
 
+	}
 	select {
 	case <-time.After(timeout):
 		return events.NilGameEvent, ErrWrapperResponseTimeout
@@ -188,7 +203,7 @@ func (w *Wrapper) processCmdToEvent(cmd, e string, timeout time.Duration) (event
 
 func (w *Wrapper) processCmdToEventArr(cmd, e string, timeout time.Duration) ([]events.GameEvent, error) {
 	evChan := w.eq.get(e)
-	if err := w.console.WriteCmd(cmd); err != nil {
+	if err := w.writeToConsole(cmd); err != nil {
 		return nil, err
 	}
 
@@ -227,7 +242,7 @@ func (w *Wrapper) GameEvents() <-chan events.GameEvent {
 
 func (w *Wrapper) Ban(player, reason string) error {
 	cmd := strings.Join([]string{"ban", player, reason}, " ")
-	return w.console.WriteCmd(cmd)
+	return w.writeToConsole(cmd)
 }
 
 func (w *Wrapper) BanList(t BanListType) ([]string, error) {
@@ -263,12 +278,12 @@ func (w *Wrapper) DataGet(t, id string) (*DataGetOutput, error) {
 // DefaultGameMode sets the default game mode for new players joining.
 func (w *Wrapper) DefaultGameMode(mode GameMode) error {
 	cmd := fmt.Sprintf("defaultgamemode %s", mode)
-	return w.console.WriteCmd(cmd)
+	return w.writeToConsole(cmd)
 }
 
 // DeOp removes a given player from the operator list.
 func (w *Wrapper) DeOp(player string) error {
-	return w.console.WriteCmd("deop " + player)
+	return w.writeToConsole("deop " + player)
 }
 
 // Difficulty changes the game difficulty level of the world.
@@ -285,22 +300,22 @@ func (w *Wrapper) SaveAll(flush bool) error {
 	if flush {
 		cmd += " flush"
 	}
-	return w.console.WriteCmd(cmd)
+	return w.writeToConsole(cmd)
 }
 
 // SaveOn enables automatic saving. The server is allowed to write to the world files.
 func (w *Wrapper) SaveOn() error {
-	return w.console.WriteCmd("save-on")
+	return w.writeToConsole("save-on")
 }
 
 // SaveOff disables automatic saving by preventing the server from writing to the world files.
 func (w *Wrapper) SaveOff() error {
-	return w.console.WriteCmd("save-off")
+	return w.writeToConsole("save-off")
 }
 
 // Say sends the given message in the minecraft in-game chat.
 func (w *Wrapper) Say(msg string) error {
-	return w.console.WriteCmd("say " + msg)
+	return w.writeToConsole("say " + msg)
 }
 
 // Seed returns the world seed.
@@ -323,9 +338,8 @@ func (w *Wrapper) Start() error {
 	return w.console.Start()
 }
 
-func (w *Wrapper) StartAndWait() (<-chan bool, error) {
-	err := w.Start()
-	return w.startedChan, err
+func (w *Wrapper) Loaded() <-chan bool {
+	return w.loadedChan
 }
 
 // State returns the current state of the server, it can be one of:

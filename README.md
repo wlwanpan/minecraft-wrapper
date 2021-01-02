@@ -19,7 +19,7 @@ go get github.com/wlwanpan/minecraft-wrapper
 
 ## Usage
 
-- Usage with default configs:
+- Starting the server and listening to game events:
 ```go
 wpr := wrapper.NewDefaultWrapper("server.jar", 1024, 1024)
 wpr.Start()
@@ -32,6 +32,16 @@ for {
     log.Println(e.String())
   }
 }
+```
+
+- Broadcast a 'Hello' message once the server is loaded:
+```go
+wpr := wrapper.NewDefaultWrapper("server.jar", 1024, 1024)
+wpr.Start()
+defer wpr.Stop()
+
+<-wpr.Loaded()
+wpr.Say("Hello")
 ```
 
 - Retrieving a player position from the [`/data get`](https://minecraft.gamepedia.com/Commands/data#get) command:
@@ -50,6 +60,8 @@ if err := wpr.SaveAll(true); err != nil {
 }
 ```
 
+For more examples, go to the examples dir from this repo.
+
 Note: This package is developed and tested on Minecraft 1.16, though most functionalities (`Start`, `Stop`, `Seed`, ...) works across all versions. Commands like `/data get` was introduced in version 1.13 and might not work for earlier versions. :warning: 
 
 ## Overview
@@ -58,7 +70,7 @@ Note: This package is developed and tested on Minecraft 1.16, though most functi
   <img src="https://github.com/wlwanpan/minecraft-wrapper/blob/master/assets/architecture.png?raw=true" alt="Minecraft Wrapper Overview"/>
 </p>
 
-If you are interested in learning the basic inner working of the wrapper, you can check out my [Medium article](https://levelup.gitconnected.com/lets-build-a-minecraft-server-wrapper-in-go-122c087e0023) for more details.
+If you are interested, you can visit this [Medium article](https://levelup.gitconnected.com/lets-build-a-minecraft-server-wrapper-in-go-122c087e0023) to learn some of the basic inner working of the wrapper.
 
 ## Commands :construction:
 
@@ -83,10 +95,11 @@ The following apis/commands are from the official minecraft gamepedia [list of c
 - [ ] [Fill](https://minecraft.gamepedia.com/Commands/fill)
 - [ ] [ForceLoad](https://minecraft.gamepedia.com/Commands/forceload)
 - [ ] [Function](https://minecraft.gamepedia.com/Commands/function)
-- [x] [GameEvents](https://pkg.go.dev/github.com/wlwanpan/minecraft-wrapper#Wrapper.GameEvents) - Returns a receive-only GameEvent channel (Unofficial)
+- [x] [GameEvents](https://pkg.go.dev/github.com/wlwanpan/minecraft-wrapper#Wrapper.GameEvents) - A GameEvent channel of events happening during in-game (Unofficial)
 - [ ] [GameMode](https://minecraft.gamepedia.com/Commands/gamemode)
 - [ ] [GameRule](https://minecraft.gamepedia.com/Commands/gamerule)
 - [x] [Kill](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Kill) - Terminates the Java Process (Unofficial)
+- [x] [Loaded](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Loaded) - Returns bool from a read-only channel once the server is loaded (Unofficial)
 - [x] [SaveAll](https://minecraft.gamepedia.com/Commands/save#save-all)
 - [x] [SaveOff](https://minecraft.gamepedia.com/Commands/save#save-off)
 - [x] [SaveOn](https://minecraft.gamepedia.com/Commands/save#save-on)
@@ -101,7 +114,6 @@ The following apis/commands are from the official minecraft gamepedia [list of c
 - [ ] [Spectate](https://minecraft.gamepedia.com/Commands/spectate)
 - [ ] [SpreadPlayers](https://minecraft.gamepedia.com/Commands/spreadplayers)
 - [x] [Start](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Start) (Unofficial)
-- [x] [StartAndWait](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.StartAndWait) - Starts the minecraft server and waits until its fully loaded and 'online' (Unofficial)
 - [x] [State](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.State) - Returns the current state of the Wrapper (Unofficial)
 - [x] [Stop](https://minecraft.gamepedia.com/Commands/stop)
 - [ ] [StopSound](https://minecraft.gamepedia.com/Commands/stopsound)

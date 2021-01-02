@@ -3,10 +3,10 @@ package events
 type EventType int
 
 const (
-	TypeNil   EventType = iota
-	TypeState EventType = iota
-	TypeCmd   EventType = iota
-	TypeGame  EventType = iota
+	TypeNil EventType = iota
+	TypeState
+	TypeCmd
+	TypeGame
 )
 
 const (

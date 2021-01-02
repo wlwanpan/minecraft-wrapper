@@ -8,6 +8,12 @@ import (
 	"github.com/wlwanpan/minecraft-wrapper/events"
 )
 
+// LogParser is an interface func to decode any server log line
+// to its respective event type. The returned events must be either:
+// - Cmd: event holds data to be returned to a user command.
+// - State: event affects the state of the wrapper.
+// - Game: event related to in-game events, like a player died...
+// - Nil: event that hold no value and usually ignored/
 type LogParser func(string, int) (events.Event, events.EventType)
 
 type logLine struct {
@@ -52,7 +58,7 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.PlayerUUID:       regexp.MustCompile(`UUID of player (?s)(.*) is (?s)(.*)`),
 	events.PlayerSay:        regexp.MustCompile(`<(?s)(.*)> (?s)(.*)`),
 	events.Seed:             regexp.MustCompile(`Seed: (.*)`),
-	events.ServerOverloaded: regexp.MustCompile(`Can't keep up! Is the server overloaded? Running 2007ms or 40 ticks behind`),
+	events.ServerOverloaded: regexp.MustCompile(`Can't keep up! Is the server overloaded? Running (.*) or (.*) ticks behind`), // Test this?
 	events.TimeIs:           regexp.MustCompile(`The time is (?s)(.*)`),
 	events.Version:          regexp.MustCompile(`Starting minecraft server version (.*)`),
 }
@@ -100,6 +106,8 @@ func logParserFunc(line string, tick int) (events.Event, events.EventType) {
 			return handleDataGetNoEntity(matches)
 		case events.Seed:
 			return handleSeed(matches)
+		case events.ServerOverloaded:
+			return handleServerOverloaded(matches, tick)
 		case events.DefaultGameMode:
 			return handleDefaultGameMode(matches)
 		case events.Banned:
@@ -236,6 +244,16 @@ func handleSeed(matches []string) (events.GameEvent, events.EventType) {
 		"data_raw": matches[1],
 	}
 	return sdEvent, events.TypeCmd
+}
+
+func handleServerOverloaded(matches []string, tick int) (events.GameEvent, events.EventType) {
+	soEvent := events.NewGameEvent(events.ServerOverloaded)
+	soEvent.Tick = tick
+	soEvent.Data = map[string]string{
+		"lag_time": matches[1],
+		"lag_tick": matches[2],
+	}
+	return soEvent, events.TypeGame
 }
 
 func handleDefaultGameMode(matches []string) (events.GameEvent, events.EventType) {

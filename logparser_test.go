@@ -8,7 +8,7 @@ import (
 	"github.com/wlwanpan/minecraft-wrapper/events"
 )
 
-func testParsedEvents(evs []events.Event, testfilename string, t *testing.T) {
+func testParsedEvents(t *testing.T, evs []events.Event, testfilename string) {
 	testfile, err := os.Open(testfilename)
 	if err != nil {
 		t.Errorf("failed to load test file: %s", err)
@@ -37,7 +37,7 @@ func testParsedEvents(evs []events.Event, testfilename string, t *testing.T) {
 	}
 }
 
-func testParsedGameEvents(gevs []events.GameEvent, testfilename string, t *testing.T) {
+func testParsedGameEvents(t *testing.T, gevs []events.GameEvent, testfilename string) {
 	testfile, err := os.Open(testfilename)
 	if err != nil {
 		t.Errorf("failed to load test file: %s", err)
@@ -82,7 +82,7 @@ func TestServerStartLogs(t *testing.T) {
 		events.StartingEvent,
 		events.StartedEvent,
 	}
-	testParsedEvents(evs, "testdata/server_start_log.txt", t)
+	testParsedEvents(t, evs, "testdata/server_start_log")
 }
 
 func TestPlayerBasicLogs(t *testing.T) {
@@ -142,5 +142,5 @@ func TestPlayerBasicLogs(t *testing.T) {
 			},
 		},
 	}
-	testParsedGameEvents(gevs, "testdata/player_basic_log.txt", t)
+	testParsedGameEvents(t, gevs, "testdata/player_basic_log")
 }
