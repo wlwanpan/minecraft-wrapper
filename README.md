@@ -50,13 +50,6 @@ if err := wpr.SaveAll(true); err != nil {
 }
 ```
 
-- Listening to the `Wrapper` state changes:
-```go
-wpr.RegisterStateChangeCBs(func (w *wrapper.Wrapper, from events.Event, to events.Event) {
-	log.Printf("%s -> %s", from.String(), to.String())
-})
-```
-
 Note: This package is developed and tested on Minecraft 1.16, though most functionalities (`Start`, `Stop`, `Seed`, ...) works across all versions. Commands like `/data get` was introduced in version 1.13 and might not work for earlier versions. :warning: 
 
 ## Overview
@@ -90,7 +83,7 @@ The following apis/commands are from the official minecraft gamepedia [list of c
 - [ ] [Fill](https://minecraft.gamepedia.com/Commands/fill)
 - [ ] [ForceLoad](https://minecraft.gamepedia.com/Commands/forceload)
 - [ ] [Function](https://minecraft.gamepedia.com/Commands/function)
-- [x] [GameEvents](https://pkg.go.dev/github.com/wlwanpan/minecraft-wrapper#Wrapper.GameEvents) - Returns a receive-only GameEvent chan(Unofficial)
+- [x] [GameEvents](https://pkg.go.dev/github.com/wlwanpan/minecraft-wrapper#Wrapper.GameEvents) - Returns a receive-only GameEvent channel (Unofficial)
 - [ ] [GameMode](https://minecraft.gamepedia.com/Commands/gamemode)
 - [ ] [GameRule](https://minecraft.gamepedia.com/Commands/gamerule)
 - [x] [Kill](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Kill) - Terminates the Java Process (Unofficial)
@@ -101,13 +94,14 @@ The following apis/commands are from the official minecraft gamepedia [list of c
 - [ ] [Schedule](https://minecraft.gamepedia.com/Commands/scoreboard)
 - [ ] [Scoreboard](https://minecraft.gamepedia.com/Commands/scoreboard)
 - [x] [Seed](https://minecraft.gamepedia.com/Commands/seed)
-- [x] [Start](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Start) (Unofficial)
 - [ ] [SetBlock](https://minecraft.gamepedia.com/Commands/setblock)
 - [ ] [SetIdleTime](https://minecraft.gamepedia.com/Commands/setidletimeout)
 - [ ] [SetWorldSpawn](https://minecraft.gamepedia.com/Commands/setworldspawn)
 - [ ] [SpawnPoint](https://minecraft.gamepedia.com/Commands/spawnpoint)
 - [ ] [Spectate](https://minecraft.gamepedia.com/Commands/spectate)
 - [ ] [SpreadPlayers](https://minecraft.gamepedia.com/Commands/spreadplayers)
+- [x] [Start](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Start) (Unofficial)
+- [x] [StartAndWait](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.StartAndWait) - Starts the minecraft server and waits until its fully loaded and 'online' (Unofficial)
 - [x] [State](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.State) - Returns the current state of the Wrapper (Unofficial)
 - [x] [Stop](https://minecraft.gamepedia.com/Commands/stop)
 - [ ] [StopSound](https://minecraft.gamepedia.com/Commands/stopsound)

@@ -77,7 +77,7 @@ type Wrapper struct {
 	clock          *clock
 	eq             *eventsQueue
 	gameEventsChan chan (events.GameEvent)
-	stateChangeCBs []StateChangeFunc
+	startedChan    chan bool
 }
 
 func NewDefaultWrapper(server string, initial, max int) *Wrapper {
@@ -93,6 +93,7 @@ func NewWrapper(c Console, p LogParser) *Wrapper {
 		clock:          newClock(),
 		eq:             newEventsQueue(),
 		gameEventsChan: make(chan events.GameEvent, 10),
+		startedChan:    make(chan bool, 1),
 	}
 	wpr.newFSM()
 	return wpr
@@ -104,18 +105,12 @@ func (w *Wrapper) newFSM() {
 		wrapperFsmEvents,
 		fsm.Callbacks{
 			"enter_state": func(ev *fsm.Event) {
-				srcEvent := events.NewStateEvent(ev.Src)
-				dstEvent := events.NewStateEvent(ev.Dst)
-				go w.triggerStateChangeCBs(srcEvent, dstEvent)
+				if ev.Src == WrapperStarting && ev.Dst == WrapperOnline {
+					w.startedChan <- true
+				}
 			},
 		},
 	)
-}
-
-func (w *Wrapper) triggerStateChangeCBs(from, to events.Event) {
-	for _, f := range w.stateChangeCBs {
-		f(w, from, to)
-	}
 }
 
 func (w *Wrapper) processLogEvents() {
@@ -230,13 +225,6 @@ func (w *Wrapper) GameEvents() <-chan events.GameEvent {
 	return w.gameEventsChan
 }
 
-// RegisterStateChangeCBs allow you to register a callback func
-// that is called on each state changes to your minecraft server
-// For example: server goes from 'offline' to 'starting'.
-func (w *Wrapper) RegisterStateChangeCBs(cbs ...StateChangeFunc) {
-	w.stateChangeCBs = append(w.stateChangeCBs, cbs...)
-}
-
 func (w *Wrapper) Ban(player, reason string) error {
 	cmd := strings.Join([]string{"ban", player, reason}, " ")
 	return w.console.WriteCmd(cmd)
@@ -333,6 +321,11 @@ func (w *Wrapper) Start() error {
 	go w.processLogEvents()
 	go w.processClock()
 	return w.console.Start()
+}
+
+func (w *Wrapper) StartAndWait() (<-chan bool, error) {
+	err := w.Start()
+	return w.startedChan, err
 }
 
 // State returns the current state of the server, it can be one of:
