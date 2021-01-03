@@ -28,8 +28,8 @@ defer wpr.Stop()
 // Listening to game events...
 for {
   select {
-  case e := <-wpr.GameEvents():
-    log.Println(e.String())
+  case ev := <-wpr.GameEvents():
+    log.Println(ev.String())
   }
 }
 ```
@@ -50,17 +50,32 @@ out, err := wpr.DataGet("entity", PLAYER_NAME|PLAYER_UUID)
 if err != nil {
 	...
 }
-fmt.Println(out.Pos) // [PLAYER_X, PLAYER_Y, PLAYER_Z]
+fmt.Println(out.Pos) // [POS_X, POS_Y, POS_Z]
 ```
 
-- Triggers the running game to save immediately.
+- Save the game and `Tell` a game admin `"admin-player"`, when the server is overloading.
 ```go
-if err := wpr.SaveAll(true); err != nil {
-  ...
+wpr := wrapper.NewDefaultWrapper("server.jar", 1024, 1024)
+wpr.Start()
+defer wpr.Stop()
+<-wpr.Loaded()
+
+for {
+  select {
+  case ev := <-wpr.GameEvents():
+    if ev.String() == events.ServerOverloaded {
+      if err := wpr.SaveAll(true); err != nil {
+        ...
+      }
+      broadcastMsg := fmt.Sprintf("Server is overloaded and lagging by %sms", ev.Data["lag_time"])
+      err := wpr.Tell("admin-player", broadcastMsg)
+      ...
+    }
+  }
 }
 ```
 
-For more examples, go to the examples dir from this repo.
+For more example, go to the examples dir from this repo (more will be added soon).
 
 Note: This package is developed and tested on Minecraft 1.16, though most functionalities (`Start`, `Stop`, `Seed`, ...) works across all versions. Commands like `/data get` was introduced in version 1.13 and might not work for earlier versions. :warning: 
 
@@ -133,6 +148,10 @@ The following apis/commands are from the official minecraft gamepedia [list of c
 - [ ] [Xp](https://minecraft.gamepedia.com/Commands/xp)
 
 Note: this list might be incomplete...
+
+## GameEvents :construction:
+
+List of game events and their respective data...
 
 ## Minecraft resources
 
