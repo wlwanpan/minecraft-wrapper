@@ -34,7 +34,7 @@ for {
 }
 ```
 
-- Broadcast a 'Hello' message once the server is loaded:
+- Broadcast a `"Hello"` message once the server is loaded:
 ```go
 wpr := wrapper.NewDefaultWrapper("server.jar", 1024, 1024)
 wpr.Start()

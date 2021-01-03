@@ -76,7 +76,7 @@ func testParsedGameEvents(t *testing.T, gevs []events.GameEvent, testfilename st
 	}
 }
 
-func TestServerStartLogs(t *testing.T) {
+func TestServerStartLog(t *testing.T) {
 	evs := []events.Event{
 		events.VersionEvent,
 		events.StartingEvent,
@@ -85,7 +85,27 @@ func TestServerStartLogs(t *testing.T) {
 	testParsedEvents(t, evs, "testdata/server_start_log")
 }
 
-func TestPlayerBasicLogs(t *testing.T) {
+func TestServerOverloadedLog(t *testing.T) {
+	testLagTimes := [][]string{
+		{"1", "1"},
+		{"2004", "0"},
+		{"1000000", "1000000"},
+	}
+
+	gevs := []events.GameEvent{}
+	for _, times := range testLagTimes {
+		gev := events.NewGameEvent(events.ServerOverloaded)
+		gev.Data = map[string]string{
+			"lag_time": times[0],
+			"lag_tick": times[1],
+		}
+		gevs = append(gevs, gev)
+	}
+
+	testParsedGameEvents(t, gevs, "testdata/server_overloaded_log")
+}
+
+func TestPlayerBasicLog(t *testing.T) {
 	gevs := []events.GameEvent{
 		{
 			Name: events.PlayerUUID,

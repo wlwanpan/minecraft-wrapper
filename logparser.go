@@ -59,7 +59,7 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.PlayerUUID:       regexp.MustCompile(`UUID of player (?s)(.*) is (?s)(.*)`),
 	events.PlayerSay:        regexp.MustCompile(`<(?s)(.*)> (?s)(.*)`),
 	events.Seed:             regexp.MustCompile(`Seed: (.*)`),
-	events.ServerOverloaded: regexp.MustCompile(`Can't keep up! Is the server overloaded? Running (.*) or (.*) ticks behind`), // Test this?
+	events.ServerOverloaded: regexp.MustCompile(`Can't keep up! Is the server overloaded\? Running ([0-9]+)ms or ([0-9]+) ticks behind`),
 	events.TimeIs:           regexp.MustCompile(`The time is (?s)(.*)`),
 	events.Version:          regexp.MustCompile(`Starting minecraft server version (.*)`),
 	events.WhisperTo:        regexp.MustCompile(`You whisper to (?s)(.*): (.*)`),
