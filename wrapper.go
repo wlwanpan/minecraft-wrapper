@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -184,42 +185,57 @@ func (w *Wrapper) processClock() {
 	}
 }
 
-func (w *Wrapper) agregateGameEventChans(evs []string) <-chan events.GameEvent {
-	agregatorChan := make(chan events.GameEvent, 1)
+func (w *Wrapper) aggregateGameEventChans(evs []string) <-chan events.GameEvent {
+	agregatorChan := make(chan events.GameEvent)
 
 	for _, ev := range evs {
-		evChan := w.eq.get(ev)
-
-		go func(chn <-chan events.GameEvent) {
-			agregatorChan <- <-chn
-		}(evChan)
+		go func(ev string) {
+			agregatorChan <- <-w.eq.get(ev)
+		}(ev)
 	}
 	return agregatorChan
 }
 
 func (w *Wrapper) processCmdToEvent(cmd string, timeout time.Duration, evs ...string) (events.GameEvent, error) {
-	evChan := w.agregateGameEventChans(evs)
+	gchns := make([]<-chan events.GameEvent, len(evs))
+	for i, ev := range evs {
+		gchns[i] = w.eq.get(ev)
+	}
+
+	timeoutCaseIdx := len(evs)
+	cases := make([]reflect.SelectCase, timeoutCaseIdx+1)
+	for i, ch := range gchns {
+		cases[i] = reflect.SelectCase{
+			Dir:  reflect.SelectRecv,
+			Chan: reflect.ValueOf(ch),
+		}
+	}
+	cases[timeoutCaseIdx] = reflect.SelectCase{
+		Dir:  reflect.SelectRecv,
+		Chan: reflect.ValueOf(time.After(timeout)),
+	}
+
 	if err := w.writeToConsole(cmd); err != nil {
 		return events.NilGameEvent, err
-
 	}
 
-	select {
-	case ev := <-evChan:
-		errMessage, ok := ev.Data["error_message"]
-		if ok {
-			// If the game event carries an 'error_message' in its Data field,
-			// wrap and propagate the error message as an error.
-			return events.NilGameEvent, errors.New(errMessage)
-		}
-		return ev, nil
-	case <-time.After(timeout):
+	chosen, value, _ := reflect.Select(cases)
+	if chosen == timeoutCaseIdx {
 		return events.NilGameEvent, ErrWrapperResponseTimeout
 	}
+
+	ev := value.Interface().(events.GameEvent)
+	errMessage, ok := ev.Data["error_message"]
+	if ok {
+		// If the game event carries an 'error_message' in its Data field,
+		// wrap and propagate the error message as an error.
+		return events.NilGameEvent, errors.New(errMessage)
+	}
+	return ev, nil
 }
 
-func (w *Wrapper) processCmdToEventArr(cmd string, timeout time.Duration, evs ...string) ([]events.GameEvent, error) {
-	evChan := w.agregateGameEventChans(evs)
+func (w *Wrapper) processCmdToEventArr(cmd string, timeout time.Duration, ev string) ([]events.GameEvent, error) {
+	evChan := w.eq.get(ev)
 	if err := w.writeToConsole(cmd); err != nil {
 		return nil, err
 	}
@@ -375,9 +391,10 @@ func (w *Wrapper) Kill() error {
 	return w.console.Kill()
 }
 
+// Tell sends a message to a specific target in the server.
 func (w *Wrapper) Tell(target, msg string) error {
 	cmd := fmt.Sprintf("tell %s %s", target, msg)
-	ev, err := w.processCmdToEvent(cmd, 1*time.Second, events.WhisperTo, events.NoPlayerFound)
+	ev, err := w.processCmdToEvent(cmd, 3*time.Second, events.WhisperTo, events.NoPlayerFound)
 	if err != nil {
 		return err
 	}
