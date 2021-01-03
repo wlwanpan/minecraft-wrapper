@@ -62,7 +62,7 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.ServerOverloaded: regexp.MustCompile(`Can't keep up! Is the server overloaded? Running (.*) or (.*) ticks behind`), // Test this?
 	events.TimeIs:           regexp.MustCompile(`The time is (?s)(.*)`),
 	events.Version:          regexp.MustCompile(`Starting minecraft server version (.*)`),
-	events.WhisperTo:        regexp.MustCompile(`You whisper to bebounok: hey`),
+	events.WhisperTo:        regexp.MustCompile(`You whisper to (?s)(.*): (.*)`),
 }
 
 func logParserFunc(line string, tick int) (events.Event, events.EventType) {
