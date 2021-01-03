@@ -51,6 +51,7 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.DataGetNoEntity: regexp.MustCompile(`No (entity|block|storage) was found`),
 	events.DefaultGameMode: regexp.MustCompile(`The default game mode is now (Survival|Creative|Adventure|Spectator) Mode`),
 	events.Difficulty:      regexp.MustCompile(`The difficulty (?s)(.*)`),
+	events.NoPlayerFound:   regexp.MustCompile(`No player was found`),
 	// TODO: There is an insane amount of death messages: https://minecraft.gamepedia.com/Death_messages, support all?
 	events.PlayerDied:       regexp.MustCompile(`(?s)(.*) (was shot|was pummeled|drowned|blew up|was blown up|was killed by|hit the ground|fell|was slain|suffocated)(.*)`),
 	events.PlayerJoined:     regexp.MustCompile(`(?s)(.*) joined the game`),
@@ -61,6 +62,7 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.ServerOverloaded: regexp.MustCompile(`Can't keep up! Is the server overloaded? Running (.*) or (.*) ticks behind`), // Test this?
 	events.TimeIs:           regexp.MustCompile(`The time is (?s)(.*)`),
 	events.Version:          regexp.MustCompile(`Starting minecraft server version (.*)`),
+	events.WhisperTo:        regexp.MustCompile(`You whisper to bebounok: hey`),
 }
 
 func logParserFunc(line string, tick int) (events.Event, events.EventType) {
@@ -86,6 +88,8 @@ func logParserFunc(line string, tick int) (events.Event, events.EventType) {
 			return handleBanListEntry(matches)
 		case events.Difficulty:
 			return handleDifficulty(matches)
+		case events.NoPlayerFound:
+			return events.NewGameEvent(e), events.TypeCmd
 		case events.PlayerJoined:
 			return handlePlayerJoined(matches, tick)
 		case events.PlayerLeft:
@@ -112,6 +116,8 @@ func logParserFunc(line string, tick int) (events.Event, events.EventType) {
 			return handleDefaultGameMode(matches)
 		case events.Banned:
 			return handleBanned(matches)
+		case events.WhisperTo:
+			return events.NewGameEvent(e), events.TypeCmd
 		default:
 			gameEvent := events.NewGameEvent(e)
 			gameEvent.Tick = tick

@@ -30,6 +30,9 @@ var (
 	// is not 'online'. The minecraft server is not loaded and ready to process
 	// any commands.
 	ErrWrapperNotOnline = errors.New("not online")
+	// ErrPlayerNotFound is returned when a targetted command failed to process
+	// due to the player not being connected to the server.
+	ErrPlayerNotFound = errors.New("player not found")
 )
 
 var wrapperFsmEvents = fsm.Events{
@@ -181,15 +184,27 @@ func (w *Wrapper) processClock() {
 	}
 }
 
-func (w *Wrapper) processCmdToEvent(cmd, e string, timeout time.Duration) (events.GameEvent, error) {
-	evChan := w.eq.get(e)
+func (w *Wrapper) agregateGameEventChans(evs []string) <-chan events.GameEvent {
+	agregatorChan := make(chan events.GameEvent, 1)
+
+	for _, ev := range evs {
+		evChan := w.eq.get(ev)
+
+		go func(chn <-chan events.GameEvent) {
+			agregatorChan <- <-chn
+		}(evChan)
+	}
+	return agregatorChan
+}
+
+func (w *Wrapper) processCmdToEvent(cmd string, timeout time.Duration, evs ...string) (events.GameEvent, error) {
+	evChan := w.agregateGameEventChans(evs)
 	if err := w.writeToConsole(cmd); err != nil {
 		return events.NilGameEvent, err
 
 	}
+
 	select {
-	case <-time.After(timeout):
-		return events.NilGameEvent, ErrWrapperResponseTimeout
 	case ev := <-evChan:
 		errMessage, ok := ev.Data["error_message"]
 		if ok {
@@ -198,11 +213,13 @@ func (w *Wrapper) processCmdToEvent(cmd, e string, timeout time.Duration) (event
 			return events.NilGameEvent, errors.New(errMessage)
 		}
 		return ev, nil
+	case <-time.After(timeout):
+		return events.NilGameEvent, ErrWrapperResponseTimeout
 	}
 }
 
-func (w *Wrapper) processCmdToEventArr(cmd, e string, timeout time.Duration) ([]events.GameEvent, error) {
-	evChan := w.eq.get(e)
+func (w *Wrapper) processCmdToEventArr(cmd string, timeout time.Duration, evs ...string) ([]events.GameEvent, error) {
+	evChan := w.agregateGameEventChans(evs)
 	if err := w.writeToConsole(cmd); err != nil {
 		return nil, err
 	}
@@ -247,7 +264,7 @@ func (w *Wrapper) Ban(player, reason string) error {
 
 func (w *Wrapper) BanList(t BanListType) ([]string, error) {
 	cmd := fmt.Sprintf("banlist %s", t)
-	evs, err := w.processCmdToEventArr(cmd, events.BanList, 10*time.Second)
+	evs, err := w.processCmdToEventArr(cmd, 3*time.Second, events.BanList)
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +280,7 @@ func (w *Wrapper) BanList(t BanListType) ([]string, error) {
 // The data is originally stored in a NBT format.
 func (w *Wrapper) DataGet(t, id string) (*DataGetOutput, error) {
 	cmd := fmt.Sprintf("data get %s %s", t, id)
-	ev, err := w.processCmdToEvent(cmd, events.DataGet, 3*time.Second)
+	ev, err := w.processCmdToEvent(cmd, 3*time.Second, events.DataGet)
 	if err != nil {
 		return nil, err
 	}
@@ -289,7 +306,7 @@ func (w *Wrapper) DeOp(player string) error {
 // Difficulty changes the game difficulty level of the world.
 func (w *Wrapper) Difficulty(d GameDifficulty) error {
 	cmd := fmt.Sprintf("difficulty %s", d)
-	_, err := w.processCmdToEvent(cmd, events.Difficulty, 1*time.Second)
+	_, err := w.processCmdToEvent(cmd, 1*time.Second, events.Difficulty)
 	return err
 }
 
@@ -320,7 +337,7 @@ func (w *Wrapper) Say(msg string) error {
 
 // Seed returns the world seed.
 func (w *Wrapper) Seed() (int, error) {
-	ev, err := w.processCmdToEvent("seed", events.Seed, 1*time.Second)
+	ev, err := w.processCmdToEvent("seed", 1*time.Second, events.Seed)
 	if err != nil {
 		return 0, err
 	}
@@ -356,6 +373,18 @@ func (w *Wrapper) Stop() error {
 // Kill the java process, use with caution since it will not trigger a save game.
 func (w *Wrapper) Kill() error {
 	return w.console.Kill()
+}
+
+func (w *Wrapper) Tell(target, msg string) error {
+	cmd := fmt.Sprintf("tell %s %s", target, msg)
+	ev, err := w.processCmdToEvent(cmd, 1*time.Second, events.WhisperTo, events.NoPlayerFound)
+	if err != nil {
+		return err
+	}
+	if ev.Is(events.NoPlayerFoundEvent) {
+		return ErrPlayerNotFound
+	}
+	return nil
 }
 
 // Tick returns the current minecraft game tick, which runs at a fixed rate

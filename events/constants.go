@@ -32,6 +32,7 @@ const (
 	DataGetNoEntity         = "data-get-no-entity"
 	DefaultGameMode         = "default-game-mode"
 	Difficulty              = "difficulty"
+	NoPlayerFound           = "no-player-found"
 	PlayerJoined            = "player-joined"
 	PlayerLeft              = "player-left"
 	PlayerUUID              = "player-uuid"
@@ -41,4 +42,5 @@ const (
 	ServerOverloaded        = "server-overloaded"
 	TimeIs                  = "time-is"
 	Version                 = "version"
+	WhisperTo               = "whisper-to"
 )
