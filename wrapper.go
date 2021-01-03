@@ -185,17 +185,6 @@ func (w *Wrapper) processClock() {
 	}
 }
 
-func (w *Wrapper) aggregateGameEventChans(evs []string) <-chan events.GameEvent {
-	agregatorChan := make(chan events.GameEvent)
-
-	for _, ev := range evs {
-		go func(ev string) {
-			agregatorChan <- <-w.eq.get(ev)
-		}(ev)
-	}
-	return agregatorChan
-}
-
 func (w *Wrapper) processCmdToEvent(cmd string, timeout time.Duration, evs ...string) (events.GameEvent, error) {
 	gchns := make([]<-chan events.GameEvent, len(evs))
 	for i, ev := range evs {
