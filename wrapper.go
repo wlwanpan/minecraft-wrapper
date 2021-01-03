@@ -197,12 +197,12 @@ func (w *Wrapper) aggregateGameEventChans(evs []string) <-chan events.GameEvent 
 }
 
 func (w *Wrapper) processCmdToEvent(cmd string, timeout time.Duration, evs ...string) (events.GameEvent, error) {
-	gchns := []<-chan events.GameEvent{}
-	for _, ev := range evs {
-		gchns = append(gchns, w.eq.get(ev))
+	gchns := make([]<-chan events.GameEvent, len(evs))
+	for i, ev := range evs {
+		gchns[i] = w.eq.get(ev)
 	}
 
-	timeoutCaseIdx := len(gchns)
+	timeoutCaseIdx := len(evs)
 	cases := make([]reflect.SelectCase, timeoutCaseIdx+1)
 	for i, ch := range gchns {
 		cases[i] = reflect.SelectCase{
@@ -234,8 +234,8 @@ func (w *Wrapper) processCmdToEvent(cmd string, timeout time.Duration, evs ...st
 	return ev, nil
 }
 
-func (w *Wrapper) processCmdToEventArr(cmd string, timeout time.Duration, evs ...string) ([]events.GameEvent, error) {
-	evChan := w.aggregateGameEventChans(evs)
+func (w *Wrapper) processCmdToEventArr(cmd string, timeout time.Duration, ev string) ([]events.GameEvent, error) {
+	evChan := w.eq.get(ev)
 	if err := w.writeToConsole(cmd); err != nil {
 		return nil, err
 	}
@@ -391,6 +391,7 @@ func (w *Wrapper) Kill() error {
 	return w.console.Kill()
 }
 
+// Tell sends a message to a specific target in the server.
 func (w *Wrapper) Tell(target, msg string) error {
 	cmd := fmt.Sprintf("tell %s %s", target, msg)
 	ev, err := w.processCmdToEvent(cmd, 3*time.Second, events.WhisperTo, events.NoPlayerFound)

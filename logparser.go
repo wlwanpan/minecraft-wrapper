@@ -36,33 +36,33 @@ func parseToLogLine(line string) *logLine {
 }
 
 var stateEventToRegexp = map[string]*regexp.Regexp{
-	events.Started:  regexp.MustCompile(`Done (?s)(.*)! For help`),
-	events.Starting: regexp.MustCompile(`Starting Minecraft server on (.*)`),
-	events.Stopping: regexp.MustCompile(`Stopping (.*) server`),
-	events.Saving:   regexp.MustCompile(`Saving the game`),
-	events.Saved:    regexp.MustCompile(`Saved (?s)(.*)`),
+	events.Started:  regexp.MustCompile(`^Done (?s)(.*)! For help`),
+	events.Starting: regexp.MustCompile(`^Starting Minecraft server on (.*)`),
+	events.Stopping: regexp.MustCompile(`^Stopping (.*) server`),
+	events.Saving:   regexp.MustCompile(`^Saving the game`),
+	events.Saved:    regexp.MustCompile(`^Saved (?s)(.*)`),
 }
 
 var gameEventToRegex = map[string]*regexp.Regexp{
-	events.Banned:          regexp.MustCompile(`Banned (?s)(.*): (?s)(.*)`),
-	events.BanList:         regexp.MustCompile(`There are (no|\d+) bans(:|\z)`),
+	events.Banned:          regexp.MustCompile(`^Banned (?s)(.*): (?s)(.*)`),
+	events.BanList:         regexp.MustCompile(`^There are (no|\d+) bans(:|\z)`),
 	events.BanListEntry:    regexp.MustCompile(`(?s)(.*) was banned by Server: (.*)`),
 	events.DataGet:         regexp.MustCompile(`(?s)(.*) has the following (entity|block|storage) data: (.*)`),
-	events.DataGetNoEntity: regexp.MustCompile(`No (entity|block|storage) was found`),
-	events.DefaultGameMode: regexp.MustCompile(`The default game mode is now (Survival|Creative|Adventure|Spectator) Mode`),
-	events.Difficulty:      regexp.MustCompile(`The difficulty (?s)(.*)`),
-	events.NoPlayerFound:   regexp.MustCompile(`No player was found`),
+	events.DataGetNoEntity: regexp.MustCompile(`^No (entity|block|storage) was found`),
+	events.DefaultGameMode: regexp.MustCompile(`^The default game mode is now (Survival|Creative|Adventure|Spectator) Mode`),
+	events.Difficulty:      regexp.MustCompile(`^The difficulty (?s)(.*)`),
+	events.NoPlayerFound:   regexp.MustCompile(`^No player was found`),
 	// TODO: There is an insane amount of death messages: https://minecraft.gamepedia.com/Death_messages, support all?
 	events.PlayerDied:       regexp.MustCompile(`(?s)(.*) (was shot|was pummeled|drowned|blew up|was blown up|was killed by|hit the ground|fell|was slain|suffocated)(.*)`),
 	events.PlayerJoined:     regexp.MustCompile(`(?s)(.*) joined the game`),
 	events.PlayerLeft:       regexp.MustCompile(`(?s)(.*) left the game`),
-	events.PlayerUUID:       regexp.MustCompile(`UUID of player (?s)(.*) is (?s)(.*)`),
+	events.PlayerUUID:       regexp.MustCompile(`^UUID of player (?s)(.*) is (?s)(.*)`),
 	events.PlayerSay:        regexp.MustCompile(`<(?s)(.*)> (?s)(.*)`),
-	events.Seed:             regexp.MustCompile(`Seed: (.*)`),
-	events.ServerOverloaded: regexp.MustCompile(`Can't keep up! Is the server overloaded\? Running ([0-9]+)ms or ([0-9]+) ticks behind`),
-	events.TimeIs:           regexp.MustCompile(`The time is (?s)(.*)`),
-	events.Version:          regexp.MustCompile(`Starting minecraft server version (.*)`),
-	events.WhisperTo:        regexp.MustCompile(`You whisper to (?s)(.*): (.*)`),
+	events.Seed:             regexp.MustCompile(`^Seed: (.*)`),
+	events.ServerOverloaded: regexp.MustCompile(`^Can't keep up! Is the server overloaded\? Running ([0-9]+)ms or ([0-9]+) ticks behind`),
+	events.TimeIs:           regexp.MustCompile(`^The time is (?s)(.*)`),
+	events.Version:          regexp.MustCompile(`^Starting minecraft server version (.*)`),
+	events.WhisperTo:        regexp.MustCompile(`^You whisper to (?s)(.*): (.*)`),
 }
 
 func logParserFunc(line string, tick int) (events.Event, events.EventType) {
