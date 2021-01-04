@@ -24,3 +24,10 @@ const (
 	BanIPs     BanListType = "ips"
 	BanPlayers BanListType = "players"
 )
+
+type ExperienceType string
+
+const (
+	Levels ExperienceType = "levels"
+	Points ExperienceType = "points"
+)

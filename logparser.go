@@ -51,6 +51,8 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.DataGetNoEntity: regexp.MustCompile(`^No (entity|block|storage) was found`),
 	events.DefaultGameMode: regexp.MustCompile(`^The default game mode is now (Survival|Creative|Adventure|Spectator) Mode`),
 	events.Difficulty:      regexp.MustCompile(`^The difficulty (?s)(.*)`),
+	events.ExperienceAdd:   regexp.MustCompile(`^Gave ([0-9]+) experience (levels|points) to (?s)(.*)`),
+	events.ExperienceQuery: regexp.MustCompile(`(?s)(.*) has ([0-9]+) experience (levels|points)`),
 	events.NoPlayerFound:   regexp.MustCompile(`^No player was found`),
 	// TODO: There is an insane amount of death messages: https://minecraft.gamepedia.com/Death_messages, support all?
 	events.PlayerDied:       regexp.MustCompile(`(?s)(.*) (was shot|was pummeled|drowned|blew up|was blown up|was killed by|hit the ground|fell|was slain|suffocated)(.*)`),
@@ -88,8 +90,8 @@ func logParserFunc(line string, tick int) (events.Event, events.EventType) {
 			return handleBanListEntry(matches)
 		case events.Difficulty:
 			return handleDifficulty(matches)
-		case events.NoPlayerFound:
-			return events.NewGameEvent(e), events.TypeCmd
+		case events.ExperienceQuery:
+			return handleExperienceQuery(matches)
 		case events.PlayerJoined:
 			return handlePlayerJoined(matches, tick)
 		case events.PlayerLeft:
@@ -116,7 +118,7 @@ func logParserFunc(line string, tick int) (events.Event, events.EventType) {
 			return handleDefaultGameMode(matches)
 		case events.Banned:
 			return handleBanned(matches)
-		case events.WhisperTo:
+		case events.WhisperTo, events.ExperienceAdd, events.NoPlayerFound:
 			return events.NewGameEvent(e), events.TypeCmd
 		default:
 			gameEvent := events.NewGameEvent(e)
@@ -156,6 +158,14 @@ func handleDifficulty(matches []string) (events.GameEvent, events.EventType) {
 		dfEvent.Data["error_message"] = matches[0]
 	}
 	return dfEvent, events.TypeCmd
+}
+
+func handleExperienceQuery(matches []string) (events.GameEvent, events.EventType) {
+	xqEvent := events.NewGameEvent(events.ExperienceQuery)
+	xqEvent.Data = map[string]string{
+		"amount": matches[2],
+	}
+	return xqEvent, events.TypeCmd
 }
 
 func handlePlayerJoined(matches []string, tick int) (events.GameEvent, events.EventType) {

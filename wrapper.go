@@ -315,6 +315,36 @@ func (w *Wrapper) Difficulty(d GameDifficulty) error {
 	return err
 }
 
+// ExperienceAdd adds a given amount of experience either:
+// - levels or
+// - points
+// to the provided player.
+func (w *Wrapper) ExperienceAdd(target string, xp int32, xpType ExperienceType) error {
+	cmd := fmt.Sprintf("experience add %s %d %s", target, xp, xpType)
+	ev, err := w.processCmdToEvent(cmd, 1*time.Second, events.ExperienceAdd, events.NoPlayerFound)
+	if err != nil {
+		return err
+	}
+	if ev.Is(events.NoPlayerFoundEvent) {
+		return ErrPlayerNotFound
+	}
+	return nil
+}
+
+// ExperienceQuery returns the amount of experience of the provided player.
+// The 'target' arg should be a single target, multi-targets query might fail.
+func (w *Wrapper) ExperienceQuery(target string, xpType ExperienceType) (int, error) {
+	cmd := fmt.Sprintf("experience query %s %s", target, xpType)
+	ev, err := w.processCmdToEvent(cmd, 1*time.Second, events.ExperienceQuery, events.NoPlayerFound)
+	if err != nil {
+		return 0, err
+	}
+	if ev.Is(events.NoPlayerFoundEvent) {
+		return 0, ErrPlayerNotFound
+	}
+	return strconv.Atoi(ev.Data["amount"])
+}
+
 // SaveAll marks all chunks and player data to be saved to the data storage device.
 // When flush is true, the marked data are saved immediately.
 func (w *Wrapper) SaveAll(flush bool) error {

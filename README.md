@@ -106,7 +106,8 @@ The following apis/commands are from the official minecraft gamepedia [list of c
 - [x] [Difficulty](https://minecraft.gamepedia.com/Commands/difficulty)
 - [ ] [Effect](https://minecraft.gamepedia.com/Commands/effect)
 - [ ] [Enchant](https://minecraft.gamepedia.com/Commands/enchant)
-- [ ] [Experience](https://minecraft.gamepedia.com/Commands/experience)
+- [x] [ExperienceAdd](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.ExperienceAdd)
+- [x] [ExperienceQuery](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.ExperienceQuery)
 - [ ] [Fill](https://minecraft.gamepedia.com/Commands/fill)
 - [ ] [ForceLoad](https://minecraft.gamepedia.com/Commands/forceload)
 - [ ] [Function](https://minecraft.gamepedia.com/Commands/function)
@@ -145,7 +146,6 @@ The following apis/commands are from the official minecraft gamepedia [list of c
 - [ ] [Weather](https://minecraft.gamepedia.com/Commands/weather)
 - [ ] [Whitelist](https://minecraft.gamepedia.com/Commands/whitelist)
 - [ ] [WorldBorder](https://minecraft.gamepedia.com/Commands/worldborder)
-- [ ] [Xp](https://minecraft.gamepedia.com/Commands/xp)
 
 Note: this list might be incomplete...
 

@@ -32,6 +32,8 @@ const (
 	DataGetNoEntity         = "data-get-no-entity"
 	DefaultGameMode         = "default-game-mode"
 	Difficulty              = "difficulty"
+	ExperienceAdd           = "experience-add"
+	ExperienceQuery         = "experience-query"
 	NoPlayerFound           = "no-player-found"
 	PlayerJoined            = "player-joined"
 	PlayerLeft              = "player-left"
