@@ -1,6 +1,7 @@
 package wrapper
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -185,7 +186,7 @@ func (w *Wrapper) processClock() {
 	}
 }
 
-func (w *Wrapper) processCmdToEvent(cmd string, timeout time.Duration, evs ...string) (events.GameEvent, error) {
+func (w *Wrapper) processCmdToEvent(ctx context.Context, cmd string, evs ...string) (events.GameEvent, error) {
 	gchns := make([]<-chan events.GameEvent, len(evs))
 	for i, ev := range evs {
 		gchns[i] = w.eq.get(ev)
@@ -201,7 +202,7 @@ func (w *Wrapper) processCmdToEvent(cmd string, timeout time.Duration, evs ...st
 	}
 	cases[timeoutCaseIdx] = reflect.SelectCase{
 		Dir:  reflect.SelectRecv,
-		Chan: reflect.ValueOf(time.After(timeout)),
+		Chan: reflect.ValueOf(ctx.Done()),
 	}
 
 	if err := w.writeToConsole(cmd); err != nil {
@@ -285,7 +286,9 @@ func (w *Wrapper) BanList(t BanListType) ([]string, error) {
 // The data is originally stored in a NBT format.
 func (w *Wrapper) DataGet(t, id string) (*DataGetOutput, error) {
 	cmd := fmt.Sprintf("data get %s %s", t, id)
-	ev, err := w.processCmdToEvent(cmd, 3*time.Second, events.DataGet)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	ev, err := w.processCmdToEvent(ctx, cmd, events.DataGet)
 	if err != nil {
 		return nil, err
 	}
@@ -311,7 +314,9 @@ func (w *Wrapper) DeOp(player string) error {
 // Difficulty changes the game difficulty level of the world.
 func (w *Wrapper) Difficulty(d GameDifficulty) error {
 	cmd := fmt.Sprintf("difficulty %s", d)
-	_, err := w.processCmdToEvent(cmd, 1*time.Second, events.Difficulty)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	_, err := w.processCmdToEvent(ctx, cmd, events.Difficulty)
 	return err
 }
 
@@ -321,7 +326,9 @@ func (w *Wrapper) Difficulty(d GameDifficulty) error {
 // to the provided player.
 func (w *Wrapper) ExperienceAdd(target string, xp int32, xpType ExperienceType) error {
 	cmd := fmt.Sprintf("experience add %s %d %s", target, xp, xpType)
-	ev, err := w.processCmdToEvent(cmd, 1*time.Second, events.ExperienceAdd, events.NoPlayerFound)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	ev, err := w.processCmdToEvent(ctx, cmd, events.ExperienceAdd, events.NoPlayerFound)
 	if err != nil {
 		return err
 	}
@@ -335,7 +342,9 @@ func (w *Wrapper) ExperienceAdd(target string, xp int32, xpType ExperienceType) 
 // The 'target' arg should be a single target, multi-targets query might fail.
 func (w *Wrapper) ExperienceQuery(target string, xpType ExperienceType) (int, error) {
 	cmd := fmt.Sprintf("experience query %s %s", target, xpType)
-	ev, err := w.processCmdToEvent(cmd, 1*time.Second, events.ExperienceQuery, events.NoPlayerFound)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	ev, err := w.processCmdToEvent(ctx, cmd, events.ExperienceQuery, events.NoPlayerFound)
 	if err != nil {
 		return 0, err
 	}
@@ -372,7 +381,9 @@ func (w *Wrapper) Say(msg string) error {
 
 // Seed returns the world seed.
 func (w *Wrapper) Seed() (int, error) {
-	ev, err := w.processCmdToEvent("seed", 1*time.Second, events.Seed)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	ev, err := w.processCmdToEvent(ctx, "seed", events.Seed)
 	if err != nil {
 		return 0, err
 	}
@@ -413,7 +424,9 @@ func (w *Wrapper) Kill() error {
 // Tell sends a message to a specific target in the server.
 func (w *Wrapper) Tell(target, msg string) error {
 	cmd := fmt.Sprintf("tell %s %s", target, msg)
-	ev, err := w.processCmdToEvent(cmd, 3*time.Second, events.WhisperTo, events.NoPlayerFound)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	ev, err := w.processCmdToEvent(ctx, cmd, events.WhisperTo, events.NoPlayerFound)
 	if err != nil {
 		return err
 	}
