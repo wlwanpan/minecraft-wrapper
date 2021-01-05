@@ -53,6 +53,7 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.Difficulty:      regexp.MustCompile(`^The difficulty (?s)(.*)`),
 	events.ExperienceAdd:   regexp.MustCompile(`^Gave ([0-9]+) experience (levels|points) to (?s)(.*)`),
 	events.ExperienceQuery: regexp.MustCompile(`(?s)(.*) has ([0-9]+) experience (levels|points)`),
+	events.Give:            regexp.MustCompile(`^Gave ([0-9]+) \[(?s)(.*) (?s)(.*)\] to (?s)(.*)`),
 	events.NoPlayerFound:   regexp.MustCompile(`^No player was found`),
 	// TODO: There is an insane amount of death messages: https://minecraft.gamepedia.com/Death_messages, support all?
 	events.PlayerDied:       regexp.MustCompile(`(?s)(.*) (was shot|was pummeled|drowned|blew up|was blown up|was killed by|hit the ground|fell|was slain|suffocated)(.*)`),
@@ -63,6 +64,7 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.Seed:             regexp.MustCompile(`^Seed: (.*)`),
 	events.ServerOverloaded: regexp.MustCompile(`^Can't keep up! Is the server overloaded\? Running ([0-9]+)ms or ([0-9]+) ticks behind`),
 	events.TimeIs:           regexp.MustCompile(`^The time is (?s)(.*)`),
+	events.UnknownItem:      regexp.MustCompile(`^Unknown item (.*)`),
 	events.Version:          regexp.MustCompile(`^Starting minecraft server version (.*)`),
 	events.WhisperTo:        regexp.MustCompile(`^You whisper to (?s)(.*): (.*)`),
 }
@@ -118,7 +120,7 @@ func logParserFunc(line string, tick int) (events.Event, events.EventType) {
 			return handleDefaultGameMode(matches)
 		case events.Banned:
 			return handleBanned(matches)
-		case events.WhisperTo, events.ExperienceAdd, events.NoPlayerFound:
+		case events.WhisperTo, events.ExperienceAdd, events.Give, events.NoPlayerFound, events.UnknownItem:
 			return events.NewGameEvent(e), events.TypeCmd
 		default:
 			gameEvent := events.NewGameEvent(e)

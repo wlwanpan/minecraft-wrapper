@@ -34,6 +34,7 @@ const (
 	Difficulty              = "difficulty"
 	ExperienceAdd           = "experience-add"
 	ExperienceQuery         = "experience-query"
+	Give                    = "give"
 	NoPlayerFound           = "no-player-found"
 	PlayerJoined            = "player-joined"
 	PlayerLeft              = "player-left"
@@ -43,6 +44,7 @@ const (
 	Seed                    = "seed"
 	ServerOverloaded        = "server-overloaded"
 	TimeIs                  = "time-is"
+	UnknownItem             = "unknown-item"
 	Version                 = "version"
 	WhisperTo               = "whisper-to"
 )

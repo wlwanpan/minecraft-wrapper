@@ -35,6 +35,9 @@ var (
 	// ErrPlayerNotFound is returned when a targetted command failed to process
 	// due to the player not being connected to the server.
 	ErrPlayerNotFound = errors.New("player not found")
+	// ErrUnknownItem is returned when an item operation is called with an
+	// invalid item type or structure.
+	ErrUnknownItem = errors.New("unknown item")
 )
 
 var wrapperFsmEvents = fsm.Events{
@@ -269,14 +272,6 @@ func (w *Wrapper) processCmdToEventArr(cmd string, timeout time.Duration, ev str
 	}
 }
 
-// GameEvents returns a receive-only channel of game related event. For example:
-// - Player joined, left, died, was banned.
-// - Game updates like game mode changes.
-// - Player sends messages...
-func (w *Wrapper) GameEvents() <-chan events.GameEvent {
-	return w.gameEventsChan
-}
-
 func (w *Wrapper) Ban(player, reason string) error {
 	cmd := strings.Join([]string{"ban", player, reason}, " ")
 	return w.writeToConsole(cmd)
@@ -358,6 +353,30 @@ func (w *Wrapper) ExperienceQuery(target string, xpType ExperienceType) (int, er
 		return 0, ErrPlayerNotFound
 	}
 	return strconv.Atoi(ev.Data["amount"])
+}
+
+// GameEvents returns a receive-only channel of game related event. For example:
+// - Player joined, left, died, was banned.
+// - Game updates like game mode changes.
+// - Player sends messages...
+func (w *Wrapper) GameEvents() <-chan events.GameEvent {
+	return w.gameEventsChan
+}
+
+// Give give a target player entity some given items.
+func (w *Wrapper) Give(target, item string, count int) error {
+	cmd := fmt.Sprintf("give %s %s %d", target, item, count)
+	ev, err := w.processCmdToEvent(cmd, 1*time.Second, events.Give, events.NoPlayerFound, events.UnknownItem)
+	if err != nil {
+		return err
+	}
+	if ev.Is(events.NoPlayerFoundEvent) {
+		return ErrPlayerNotFound
+	}
+	if ev.Is(events.UnknownItemEvent) {
+		return ErrUnknownItem
+	}
+	return nil
 }
 
 // SaveAll marks all chunks and player data to be saved to the data storage device.

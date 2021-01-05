@@ -114,6 +114,7 @@ The following apis/commands are from the official minecraft gamepedia [list of c
 - [x] [GameEvents](https://pkg.go.dev/github.com/wlwanpan/minecraft-wrapper#Wrapper.GameEvents) - A GameEvent channel of events happening during in-game (Unofficial)
 - [ ] [GameMode](https://minecraft.gamepedia.com/Commands/gamemode)
 - [ ] [GameRule](https://minecraft.gamepedia.com/Commands/gamerule)
+- [x] [Give](https://minecraft.gamepedia.com/Commands/give)
 - [x] [Kill](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Kill) - Terminates the Java Process (Unofficial)
 - [x] [Loaded](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Loaded) - Returns bool from a read-only channel once the server is loaded (Unofficial)
 - [x] [SaveAll](https://minecraft.gamepedia.com/Commands/save#save-all)

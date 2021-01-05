@@ -62,4 +62,5 @@ var (
 	TimeIsEvent        GameEvent = NewGameEvent(TimeIs)
 	DataGetEvent       GameEvent = NewGameEvent(DataGet)
 	NoPlayerFoundEvent GameEvent = NewGameEvent(NoPlayerFound)
+	UnknownItemEvent   GameEvent = NewGameEvent(UnknownItem)
 )
