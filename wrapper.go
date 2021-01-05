@@ -86,6 +86,7 @@ type Wrapper struct {
 	parser         LogParser
 	clock          *clock
 	eq             *eventsQueue
+	playerList     map[string]string
 	ctxCancelFunc  context.CancelFunc
 	gameEventsChan chan (events.GameEvent)
 	loadedChan     chan bool
@@ -106,6 +107,7 @@ func NewWrapper(c Console, p LogParser) *Wrapper {
 		parser:         p,
 		clock:          newClock(),
 		eq:             newEventsQueue(),
+		playerList:     map[string]string{},
 		ctxCancelFunc:  func() {},
 		gameEventsChan: make(chan events.GameEvent, 10),
 		loadedChan:     make(chan bool, 1),
@@ -146,17 +148,14 @@ func (w *Wrapper) processLogEvents(ctx context.Context) {
 				return
 			}
 
-			event, t := w.parseLineToEvent(line)
+			ev, t := w.parseLineToEvent(line)
 			switch t {
 			case events.TypeState:
-				w.updateState(event.(events.StateEvent))
+				w.updateState(ev.(events.StateEvent))
 			case events.TypeCmd:
-				w.handleCmdEvent(event.(events.GameEvent))
+				w.handleCmdEvent(ev.(events.GameEvent))
 			case events.TypeGame:
-				select {
-				case w.gameEventsChan <- event.(events.GameEvent):
-				default:
-				}
+				w.handleGameEvent(ev.(events.GameEvent))
 			default:
 			}
 		}
@@ -181,6 +180,19 @@ func (w *Wrapper) handleCmdEvent(ev events.GameEvent) {
 		return
 	}
 	w.eq.push(ev)
+}
+
+func (w *Wrapper) handleGameEvent(ev events.GameEvent) {
+	if ev.Is(events.PlayerLeftEvent) {
+		delete(w.playerList, ev.Data["player_name"])
+	}
+	if ev.Is(events.PlayerUUIDEvent) {
+		w.playerList[ev.Data["player_name"]] = ev.Data["player_uuid"]
+	}
+	select {
+	case w.gameEventsChan <- ev:
+	default:
+	}
 }
 
 func (w *Wrapper) writeToConsole(cmd string) error {
@@ -460,6 +472,18 @@ func (w *Wrapper) Kill() error {
 	// does not trigger any callbacks on the fsm.
 	w.ctxCancelFunc()
 	return nil
+}
+
+// List returns a list of connected players on the server.
+func (w *Wrapper) List() []Player {
+	players := []Player{}
+	for name, uuid := range w.playerList {
+		players = append(players, Player{
+			Name: name,
+			UUID: uuid,
+		})
+	}
+	return players
 }
 
 // Tell sends a message to a specific target in the server.

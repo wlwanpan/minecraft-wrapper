@@ -53,3 +53,8 @@ type Abilities map[string]float64
 type Inventory []map[string]interface{}
 
 type RecipeBook map[string]interface{}
+
+type Player struct {
+	Name string `json:"name"`
+	UUID string `json:"uuid"`
+}

@@ -116,6 +116,7 @@ The following apis/commands are from the official minecraft gamepedia [list of c
 - [ ] [GameRule](https://minecraft.gamepedia.com/Commands/gamerule)
 - [x] [Give](https://minecraft.gamepedia.com/Commands/give)
 - [x] [Kill](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Kill) - Terminates the Java Process (Unofficial)
+- [x] [List](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.List) - Returns an arr of connected player struct
 - [x] [Loaded](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Loaded) - Returns bool from a read-only channel once the server is loaded (Unofficial)
 - [x] [SaveAll](https://minecraft.gamepedia.com/Commands/save#save-all)
 - [x] [SaveOff](https://minecraft.gamepedia.com/Commands/save#save-off)
