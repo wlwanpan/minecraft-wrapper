@@ -1,6 +1,7 @@
 package wrapper
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -82,6 +83,7 @@ type Wrapper struct {
 	parser         LogParser
 	clock          *clock
 	eq             *eventsQueue
+	ctxCancelFunc  context.CancelFunc
 	gameEventsChan chan (events.GameEvent)
 	loadedChan     chan bool
 }
@@ -101,6 +103,7 @@ func NewWrapper(c Console, p LogParser) *Wrapper {
 		parser:         p,
 		clock:          newClock(),
 		eq:             newEventsQueue(),
+		ctxCancelFunc:  func() {},
 		gameEventsChan: make(chan events.GameEvent, 10),
 		loadedChan:     make(chan bool, 1),
 	}
@@ -121,30 +124,38 @@ func (w *Wrapper) newFSM() {
 					}
 				}
 			},
+			"enter_offline": func(ev *fsm.Event) {
+				w.ctxCancelFunc()
+			},
 		},
 	)
 }
 
-func (w *Wrapper) processLogEvents() {
+func (w *Wrapper) processLogEvents(ctx context.Context) {
 	for {
-		line, err := w.console.ReadLine()
-		if err == io.EOF {
-			w.updateState(events.StoppedEvent)
+		select {
+		case <-ctx.Done():
 			return
-		}
+		default:
+			line, err := w.console.ReadLine()
+			if err == io.EOF {
+				w.updateState(events.StoppedEvent)
+				return
+			}
 
-		event, t := w.parseLineToEvent(line)
-		switch t {
-		case events.TypeState:
-			w.updateState(event.(events.StateEvent))
-		case events.TypeCmd:
-			w.handleCmdEvent(event.(events.GameEvent))
-		case events.TypeGame:
-			select {
-			case w.gameEventsChan <- event.(events.GameEvent):
+			event, t := w.parseLineToEvent(line)
+			switch t {
+			case events.TypeState:
+				w.updateState(event.(events.StateEvent))
+			case events.TypeCmd:
+				w.handleCmdEvent(event.(events.GameEvent))
+			case events.TypeGame:
+				select {
+				case w.gameEventsChan <- event.(events.GameEvent):
+				default:
+				}
 			default:
 			}
-		default:
 		}
 	}
 }
@@ -170,18 +181,22 @@ func (w *Wrapper) handleCmdEvent(ev events.GameEvent) {
 }
 
 func (w *Wrapper) writeToConsole(cmd string) error {
-	if w.State() != WrapperOnline {
+	if !w.machine.Is(WrapperOnline) {
 		return ErrWrapperNotOnline
 	}
 	return w.console.WriteCmd(cmd)
 }
 
-func (w *Wrapper) processClock() {
-	w.clock.start()
+func (w *Wrapper) processClock(ctx context.Context) {
+	w.clock.start(ctx)
 	for {
-		<-w.clock.requestSync()
-		w.clock.resetLastSync()
-		w.writeToConsole("time query daytime")
+		select {
+		case <-ctx.Done():
+			return
+		case <-w.clock.requestSync():
+			w.clock.resetLastSync()
+			w.writeToConsole("time query daytime")
+		}
 	}
 }
 
@@ -385,8 +400,13 @@ func (w *Wrapper) Seed() (int, error) {
 // Start will initialize the minecraft java process and start
 // orchestrating the wrapper machine.
 func (w *Wrapper) Start() error {
-	go w.processLogEvents()
-	go w.processClock()
+	if !w.machine.Is(WrapperOffline) {
+		return fmt.Errorf("cannot Start when wrapper is in %s state", w.State())
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	w.ctxCancelFunc = cancel
+	go w.processLogEvents(ctx)
+	go w.processClock(ctx)
 	return w.console.Start()
 }
 
@@ -402,12 +422,25 @@ func (w *Wrapper) State() string {
 
 // Stop pipes a 'stop' command to the minecraft java process.
 func (w *Wrapper) Stop() error {
+	if !w.machine.Is(WrapperOnline) {
+		return ErrWrapperNotOnline
+	}
 	return w.console.WriteCmd("stop")
 }
 
 // Kill the java process, use with caution since it will not trigger a save game.
+// Kill manually perform some cleanup task and hard reset the state to 'offline'.
 func (w *Wrapper) Kill() error {
-	return w.console.Kill()
+	if err := w.console.Kill(); err != nil {
+		return err
+	}
+
+	// Hard reset the wrapper machine state the 'offline'.
+	w.machine.SetState(WrapperOffline)
+	// Manually trigger the context cancellation since 'SetState'
+	// does not trigger any callbacks on the fsm.
+	w.ctxCancelFunc()
+	return nil
 }
 
 // Tell sends a message to a specific target in the server.

@@ -1,6 +1,7 @@
 package wrapper
 
 import (
+	"context"
 	"math"
 	"time"
 )
@@ -36,11 +37,15 @@ func newClock() *clock {
 	}
 }
 
-func (c *clock) start() {
+func (c *clock) start(ctx context.Context) {
 	go func() {
 		for {
-			<-c.ticker.C
-			c.Tick += GameTickPerSecond
+			select {
+			case <-ctx.Done():
+				return
+			case <-c.ticker.C:
+				c.Tick += GameTickPerSecond
+			}
 		}
 	}()
 }
