@@ -52,6 +52,11 @@ func TestBigDataGetDecode(t *testing.T) {
 			Name string
 			Base float64
 		}
+		RecipeBook struct {
+			Recipes          []string
+			IsFurnaceGuiOpen int
+			IsGuiOpen        int
+		}
 	}{}
 	if err := Decode(testData, &resp); err != nil {
 		t.Errorf("failed to decode testdata: %s", err)
@@ -87,5 +92,16 @@ func TestBigDataGetDecode(t *testing.T) {
 		}
 	}
 
-	// TODO: add abilities + recipeBook tests...
+	expectedRecipesLen := 482
+	if len(resp.RecipeBook.Recipes) != expectedRecipesLen {
+		t.Errorf("Attribute missing 'Recipes': actual=%d, expected=%d", len(resp.RecipeBook.Recipes), expectedRecipesLen)
+	}
+
+	if resp.RecipeBook.IsFurnaceGuiOpen != 0 {
+		t.Errorf("Attribute 'IsFurnaceGuiOpen' should be '0'")
+	}
+
+	if resp.RecipeBook.IsGuiOpen != 1 {
+		t.Errorf("Attribute 'IsGuiOpen' should be '1'")
+	}
 }

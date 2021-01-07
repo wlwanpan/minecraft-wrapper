@@ -57,7 +57,18 @@ type Abilities map[string]float64
 
 type Inventory []map[string]interface{}
 
-type RecipeBook map[string]interface{}
+type RecipeBook struct {
+	Recipes                             []string
+	ToBeDisplayed                       []string
+	IsBlastingFurnaceFilteringCraftable int
+	IsSmokerGuiOpen                     int
+	IsFilteringCraftable                int
+	IsFurnaceGuiOpen                    int
+	IsGuiOpen                           int
+	IsFurnaceFilteringCraftable         int
+	IsBlastingFurnaceGuiOpen            int
+	IsSmokerFilteringCraftable          int
+}
 
 type Player struct {
 	Name string
