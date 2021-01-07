@@ -41,6 +41,7 @@ const (
 	PlayerUUID              = "player-uuid"
 	PlayerSay               = "player-say"
 	PlayerDied              = "player-died"
+	Kicked                  = "kicked"
 	Seed                    = "seed"
 	ServerOverloaded        = "server-overloaded"
 	TimeIs                  = "time-is"

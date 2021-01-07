@@ -391,6 +391,56 @@ func (w *Wrapper) Give(target, item string, count int) error {
 	return nil
 }
 
+// Kill the java process, use with caution since it will not trigger a save game.
+// Kill manually perform some cleanup task and hard reset the state to 'offline'.
+func (w *Wrapper) Kill() error {
+	if err := w.console.Kill(); err != nil {
+		return err
+	}
+
+	// Hard reset the wrapper machine state the 'offline'.
+	w.machine.SetState(WrapperOffline)
+	// Manually trigger the context cancellation since 'SetState'
+	// does not trigger any callbacks on the fsm.
+	w.ctxCancelFunc()
+	return nil
+}
+
+// Kick kicks the provided player from the server. If a reason is provided,
+// the message will display on the players screen when disconnected.
+func (w *Wrapper) Kick(target, reason string) error {
+	cmd := strings.Join([]string{"kick", target, reason}, " ")
+	ev, err := w.processCmdToEvent(cmd, 1*time.Second, events.Kicked, events.NoPlayerFound)
+	if err != nil {
+		return err
+	}
+	if ev.Is(events.NoPlayerFoundEvent) {
+		return ErrPlayerNotFound
+	}
+	return nil
+}
+
+// List returns a list of connected players on the server.
+func (w *Wrapper) List() []Player {
+	players := []Player{}
+	for name, uuid := range w.playerList {
+		players = append(players, Player{
+			Name: name,
+			UUID: uuid,
+		})
+	}
+	return players
+}
+
+func (w *Wrapper) Loaded() <-chan bool {
+	return w.loadedChan
+}
+
+// Reload reloads the server datapack.
+func (w *Wrapper) Reload() error {
+	return w.writeToConsole("reload")
+}
+
 // SaveAll marks all chunks and player data to be saved to the data storage device.
 // When flush is true, the marked data are saved immediately.
 func (w *Wrapper) SaveAll(flush bool) error {
@@ -441,10 +491,6 @@ func (w *Wrapper) Start() error {
 	return w.console.Start()
 }
 
-func (w *Wrapper) Loaded() <-chan bool {
-	return w.loadedChan
-}
-
 // State returns the current state of the server, it can be one of:
 // 'offline', 'online', 'starting' or 'stopping'.
 func (w *Wrapper) State() string {
@@ -457,33 +503,6 @@ func (w *Wrapper) Stop() error {
 		return ErrWrapperNotOnline
 	}
 	return w.console.WriteCmd("stop")
-}
-
-// Kill the java process, use with caution since it will not trigger a save game.
-// Kill manually perform some cleanup task and hard reset the state to 'offline'.
-func (w *Wrapper) Kill() error {
-	if err := w.console.Kill(); err != nil {
-		return err
-	}
-
-	// Hard reset the wrapper machine state the 'offline'.
-	w.machine.SetState(WrapperOffline)
-	// Manually trigger the context cancellation since 'SetState'
-	// does not trigger any callbacks on the fsm.
-	w.ctxCancelFunc()
-	return nil
-}
-
-// List returns a list of connected players on the server.
-func (w *Wrapper) List() []Player {
-	players := []Player{}
-	for name, uuid := range w.playerList {
-		players = append(players, Player{
-			Name: name,
-			UUID: uuid,
-		})
-	}
-	return players
 }
 
 // Tell sends a message to a specific target in the server.

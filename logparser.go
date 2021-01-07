@@ -61,6 +61,7 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.PlayerLeft:       regexp.MustCompile(`(?s)(.*) left the game`),
 	events.PlayerUUID:       regexp.MustCompile(`^UUID of player (?s)(.*) is (?s)(.*)`),
 	events.PlayerSay:        regexp.MustCompile(`<(?s)(.*)> (?s)(.*)`),
+	events.Kicked:           regexp.MustCompile(`^Kicked (?s)(.*): (.*)`),
 	events.Seed:             regexp.MustCompile(`^Seed: (.*)`),
 	events.ServerOverloaded: regexp.MustCompile(`^Can't keep up! Is the server overloaded\? Running ([0-9]+)ms or ([0-9]+) ticks behind`),
 	events.TimeIs:           regexp.MustCompile(`^The time is (?s)(.*)`),
@@ -120,7 +121,8 @@ func logParserFunc(line string, tick int) (events.Event, events.EventType) {
 			return handleDefaultGameMode(matches)
 		case events.Banned:
 			return handleBanned(matches)
-		case events.WhisperTo, events.ExperienceAdd, events.Give, events.NoPlayerFound, events.UnknownItem:
+		case events.WhisperTo, events.ExperienceAdd, events.Give, events.NoPlayerFound,
+			events.Kicked, events.UnknownItem:
 			return events.NewGameEvent(e), events.TypeCmd
 		default:
 			gameEvent := events.NewGameEvent(e)
