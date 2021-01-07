@@ -5,48 +5,53 @@ package wrapper
 // right or precise type since the decoder will coerse any value
 // to either a string, int or float64 for simplicity.
 type DataGetOutput struct {
-	Brain                  Brain         `json:"Brain"`
-	HurtByTimestamp        int           `json:"HurtByTimestamp"`
-	SleepTimer             int           `json:"SleepTimer"`
-	SpawnForced            int           `json:"SpawnForced"`
-	Attributes             []interface{} `json:"Attributes"`
-	Invulnerable           int           `json:"Invulnerable"`
-	FallFlying             int           `json:"FallFlying"`
-	PortalCooldown         int           `json:"PortalCooldown"`
-	AbsorptionAmount       float64       `json:"AbsorptionAmount"`
-	Abilities              Abilities     `json:"abilities"`
-	FallDistance           float64       `json:"FallDistance"`
-	RecipeBook             RecipeBook    `json:"recipeBook"`
-	DeathTime              int           `json:"DeathTime"`
-	XpSeed                 int           `json:"XpSeed"`
-	XpTotal                int           `json:"XpTotal"`
-	UUID                   []interface{} `json:"UUID"` // Technically []int, cc issue in decoder.go#Lexer.buildStr()
-	PlayerGameType         int           `json:"playerGameType"`
-	SeenCredits            int           `json:"seenCredits"`
-	Motion                 []float64     `json:"Motion"`
-	Health                 float64       `json:"Health"`
-	FoodSaturationLevel    float64       `json:"foodSaturationLevel"`
-	Air                    int           `json:"Air"`
-	OnGround               int           `json:"OnGround"`
-	Dimension              string        `json:"Dimension"`
-	Rotation               []float64     `json:"Rotation"`
-	XpLevel                int           `json:"XpLevel"`
-	Score                  int           `json:"Score"`
-	Pos                    []float64     `json:"Pos"`
-	PreviousPlayerGameType int           `json:"previousPlayerGameType"`
-	Fire                   int           `json:"Fire"`
-	XpP                    float64       `json:"XpP"`
-	EnderItems             []interface{} `json:"EnderItems"`
-	DataVersion            int           `json:"DataVersion"`
-	FoodLevel              int           `json:"foodLevel"`
-	FoodExhaustionLevel    float64       `json:"foodExhaustionLevel"`
-	HurtTime               int           `json:"HurtTime"` // TODO: support native time.Time?
-	SelectedItemSlot       int           `json:"SelectedItemSlot"`
-	Inventory              Inventory     `json:"Inventory"`
-	FoodTickTimer          int           `json:"foodTickTimer"`
+	Brain                  Brain
+	HurtByTimestamp        int
+	SleepTimer             int
+	SpawnForced            int
+	Attributes             []Attribute
+	Invulnerable           int
+	FallFlying             int
+	PortalCooldown         int
+	AbsorptionAmount       float64
+	Abilities              Abilities
+	FallDistance           float64
+	RecipeBook             RecipeBook
+	DeathTime              int
+	XpSeed                 int
+	XpTotal                int
+	UUID                   []interface{} // Technically []int, cc issue in decoder.go#Lexer.buildStr()
+	PlayerGameType         int
+	SeenCredits            int
+	Motion                 []float64
+	Health                 float64
+	FoodSaturationLevel    float64
+	Air                    int
+	OnGround               int
+	Dimension              string
+	Rotation               []float64
+	XpLevel                int
+	Score                  int
+	Pos                    []float64
+	PreviousPlayerGameType int
+	Fire                   int
+	XpP                    float64
+	EnderItems             []interface{}
+	DataVersion            int
+	FoodLevel              int
+	FoodExhaustionLevel    float64
+	HurtTime               int // TODO: support native time.Time?
+	SelectedItemSlot       int
+	Inventory              Inventory
+	FoodTickTimer          int
 }
 
 type Brain map[string]map[string]interface{}
+
+type Attribute struct {
+	Name string
+	Base float64
+}
 
 type Abilities map[string]float64
 
@@ -55,6 +60,6 @@ type Inventory []map[string]interface{}
 type RecipeBook map[string]interface{}
 
 type Player struct {
-	Name string `json:"name"`
-	UUID string `json:"uuid"`
+	Name string
+	UUID string
 }

@@ -38,3 +38,54 @@ func TestFullDataGetDecode(t *testing.T) {
 		t.Errorf("Dimension not properly set: actual=%s, expected=%s", resp.Dimension, expectedDimension)
 	}
 }
+
+func TestBigDataGetDecode(t *testing.T) {
+	testData, err := ioutil.ReadFile("testdata/data_get_entity_big")
+	if err != nil {
+		t.Errorf("failed to load testdata: %s", err)
+		return
+	}
+
+	resp := struct {
+		Rotation   []float64
+		Attributes []struct {
+			Name string
+			Base float64
+		}
+	}{}
+	if err := Decode(testData, &resp); err != nil {
+		t.Errorf("failed to decode testdata: %s", err)
+	}
+	expectedPos := []float64{-71.11728, 1.9123533}
+	for i, v := range expectedPos {
+		if resp.Rotation[i] != v {
+			t.Errorf("Rotation mismatch value at %d, actual=%f, expected=%f", i, resp.Rotation[i], v)
+		}
+	}
+
+	expectedAttrs := []struct {
+		Name string
+		Base float64
+	}{
+		{"minecraft:generic.attack_damage", 1.0},
+		{"minecraft:generic.movement_speed", 0.10000000149011612},
+		{"minecraft:generic.attack_speed", 4.0},
+	}
+
+	expectedAttrsLen := len(expectedAttrs)
+	if len(resp.Attributes) != expectedAttrsLen {
+		t.Errorf("Attribute missing items: actual=%d, expected=%d", len(resp.Attributes), expectedAttrsLen)
+	}
+
+	for i, attr := range resp.Attributes {
+		expectedAttr := expectedAttrs[i]
+		if attr.Name != expectedAttr.Name {
+			t.Errorf("Attribute 'Name' value mismatch: actual=%s, expected=%s", attr.Name, expectedAttr.Name)
+		}
+		if attr.Base != expectedAttrs[i].Base {
+			t.Errorf("Attribute 'Base' value mismatch: actual=%f, expected=%f", attr.Base, expectedAttr.Base)
+		}
+	}
+
+	// TODO: add abilities + recipeBook tests...
+}

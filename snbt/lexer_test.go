@@ -5,7 +5,7 @@ import (
 )
 
 func TestBasicLexer(t *testing.T) {
-	testLog := `{Dimension: "minecraft:custom", FakeField: [111, "111"]}`
+	testLog := `{Dimension: "minecraft:custom", FakeField: [111, "111"], Rotation: [-1000, 1000]}`
 	lxr := newLexer([]byte(testLog))
 	if err := lxr.tokenize(); err != nil {
 		t.Error("failed to tokenize test str: ", err)
@@ -19,6 +19,11 @@ func TestBasicLexer(t *testing.T) {
 		{t: tkArrStart},
 		{t: tkInt, v: "111"},
 		{t: tkStr, v: "111"},
+		{t: tkArrEnd},
+		{t: tkStr, v: "Rotation"},
+		{t: tkArrStart},
+		{t: tkInt, v: "-1000"},
+		{t: tkInt, v: "1000"},
 		{t: tkArrEnd},
 		{t: tkMapEnd},
 	}
