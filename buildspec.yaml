@@ -7,4 +7,4 @@ phases:
   build:
     commands:
       - go get ./...
-      - go test . -race
+      - go test ./... -race
