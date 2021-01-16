@@ -478,6 +478,12 @@ func (w *Wrapper) Seed() (int, error) {
 	return resp[0], err
 }
 
+// SetIdleTimeout sets the default timeout in minutes after which idle players
+// are kicked out of the server.
+func (w *Wrapper) SetIdleTimeout(minutes uint32) error {
+	return w.writeToConsole(fmt.Sprintf("setidletimeout %d", minutes))
+}
+
 // Start will initialize the minecraft java process and start
 // orchestrating the wrapper machine.
 func (w *Wrapper) Start() error {

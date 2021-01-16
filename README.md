@@ -128,7 +128,7 @@ The following apis/commands are from the official minecraft gamepedia [list of c
 - [ ] [Scoreboard](https://minecraft.gamepedia.com/Commands/scoreboard)
 - [x] [Seed](https://minecraft.gamepedia.com/Commands/seed)
 - [ ] [SetBlock](https://minecraft.gamepedia.com/Commands/setblock)
-- [ ] [SetIdleTime](https://minecraft.gamepedia.com/Commands/setidletimeout)
+- [x] [SetIdleTime](https://minecraft.gamepedia.com/Commands/setidletimeout)
 - [ ] [SetWorldSpawn](https://minecraft.gamepedia.com/Commands/setworldspawn)
 - [ ] [SpawnPoint](https://minecraft.gamepedia.com/Commands/spawnpoint)
 - [ ] [Spectate](https://minecraft.gamepedia.com/Commands/spectate)
