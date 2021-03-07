@@ -218,6 +218,7 @@ func (w *Wrapper) processClock(ctx context.Context) {
 func (w *Wrapper) processCmdToEvent(cmd string, timeout time.Duration, evs ...string) (events.GameEvent, error) {
 	gchns := make([]<-chan events.GameEvent, len(evs))
 	for i, ev := range evs {
+		registerGameEvent(ev)
 		gchns[i] = w.eq.get(ev)
 	}
 
@@ -254,6 +255,7 @@ func (w *Wrapper) processCmdToEvent(cmd string, timeout time.Duration, evs ...st
 }
 
 func (w *Wrapper) processCmdToEventArr(cmd string, timeout time.Duration, ev string) ([]events.GameEvent, error) {
+	registerGameEvent(ev)
 	evChan := w.eq.get(ev)
 	if err := w.writeToConsole(cmd); err != nil {
 		return nil, err
