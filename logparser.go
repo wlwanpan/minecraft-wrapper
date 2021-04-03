@@ -70,6 +70,24 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 	events.WhisperTo:        regexp.MustCompile(`^You whisper to (?s)(.*): (.*)`),
 }
 
+var activeGameEvents = map[string]*regexp.Regexp{
+	events.PlayerDied:       gameEventToRegex[events.PlayerDied],
+	events.PlayerJoined:     gameEventToRegex[events.PlayerJoined],
+	events.PlayerLeft:       gameEventToRegex[events.PlayerLeft],
+	events.PlayerUUID:       gameEventToRegex[events.PlayerUUID],
+	events.PlayerSay:        gameEventToRegex[events.PlayerSay],
+	events.ServerOverloaded: gameEventToRegex[events.ServerOverloaded],
+	events.TimeIs:           gameEventToRegex[events.TimeIs],
+	events.Version:          gameEventToRegex[events.Version],
+}
+
+func registerGameEvent(ev string) {
+	_, ok := activeGameEvents[ev]
+	if !ok {
+		activeGameEvents[ev] = gameEventToRegex[ev]
+	}
+}
+
 func logParserFunc(line string, tick int) (events.Event, events.EventType) {
 	ll := parseToLogLine(line)
 	if ll.output == "" {
@@ -81,7 +99,7 @@ func logParserFunc(line string, tick int) (events.Event, events.EventType) {
 			return events.NewStateEvent(e), events.TypeState
 		}
 	}
-	for e, reg := range gameEventToRegex {
+	for e, reg := range activeGameEvents {
 		matches := reg.FindStringSubmatch(ll.output)
 		if matches == nil {
 			continue

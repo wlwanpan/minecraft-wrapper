@@ -54,6 +54,8 @@ func testParsedGameEvents(t *testing.T, gevs []events.GameEvent, testfilename st
 	}
 
 	if len(gevs) != len(actualEvents) {
+		t.Logf("actual  : %v", actualEvents)
+		t.Logf("expected: %v", gevs)
 		t.Errorf("wrong event count detected: actual=%d, expected=%d", len(actualEvents), len(gevs))
 		return
 	}
