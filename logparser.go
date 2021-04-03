@@ -71,6 +71,7 @@ var gameEventToRegex = map[string]*regexp.Regexp{
 }
 
 var activeGameEvents = map[string]*regexp.Regexp{
+	events.PlayerDied:       gameEventToRegex[events.PlayerDied],
 	events.PlayerJoined:     gameEventToRegex[events.PlayerJoined],
 	events.PlayerLeft:       gameEventToRegex[events.PlayerLeft],
 	events.PlayerUUID:       gameEventToRegex[events.PlayerUUID],
