@@ -291,6 +291,12 @@ func (w *Wrapper) Ban(player, reason string) error {
 	return w.writeToConsole(cmd)
 }
 
+// BanIP adds the input IP address to the servers blacklisted IPs list.
+func (w *Wrapper) BanIP(ip, reason string) error {
+	cmd := strings.Join([]string{"ban-ip", ip, reason}, " ")
+	return w.writeToConsole(cmd)
+}
+
 func (w *Wrapper) BanList(t BanListType) ([]string, error) {
 	cmd := fmt.Sprintf("banlist %s", t)
 	evs, err := w.processCmdToEventArr(cmd, 3*time.Second, events.BanList)
@@ -367,6 +373,11 @@ func (w *Wrapper) ExperienceQuery(target string, xpType ExperienceType) (int, er
 		return 0, ErrPlayerNotFound
 	}
 	return strconv.Atoi(ev.Data["amount"])
+}
+
+// ForceLoadAll removes the constant force loads on all chunks in the dimension.
+func (w *Wrapper) ForceLoadRemoveAll() error {
+	return w.writeToConsole("forceload remove all")
 }
 
 // GameEvents returns a receive-only channel of game related event. For example:
