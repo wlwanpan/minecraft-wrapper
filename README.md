@@ -9,7 +9,7 @@
 
 ## What is minecraft-wrapper?
 
-Wrapper is a Go package that wraps a Minecraft Server (JE) and interacts with it by pushing in commands and reading the server logs. This package is meant to provide nicer APIs for your Go program to manage and command your minecraft server.
+Wrapper is a Go package that wraps a Minecraft Server (JE) and interacts with it by pushing in commands and reading the server logs. This package is meant to provide nicer APIs for your Go program to manage your minecraft server.
 
 ## Installation
 
