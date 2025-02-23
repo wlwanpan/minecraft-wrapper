@@ -1,10 +1,10 @@
 # minecraft-wrapper
 
 <p align="center">
-  <img src="https://github.com/wlwanpan/minecraft-wrapper/blob/master/assets/minecraft-gopher.png?raw=true" alt="Minecraft Gopher"/>
+  <img src="https://github.com/ciathefed/minecraft-wrapper/blob/master/assets/minecraft-gopher.png?raw=true" alt="Minecraft Gopher"/>
 </p>
 
-[![GoDoc](https://godoc.org/github.com/wlwanpan/minecraft-wrapper?status.svg)](https://godoc.org/github.com/wlwanpan/minecraft-wrapper)
+[![GoDoc](https://godoc.org/github.com/ciathefed/minecraft-wrapper?status.svg)](https://godoc.org/github.com/ciathefed/minecraft-wrapper)
 [![Build Status](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoicmdSUjltNjdIODN0dFNQQXgzUUZHajB4WnFxbVVzWDlMOW41VnYvZ2pTUEN5MnBKR1djVUtwNzdraFlNblQyV01HSldGY2w1OXhIZDljOGRqYzlyU3NRPSIsIml2UGFyYW1ldGVyU3BlYyI6IlJieFV3NjZycnM5MGo2QVYiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)](https://us-west-2.console.aws.amazon.com/codesuite/codebuild/597927659010/projects/minecraft-wrapper)
 
 ## What is minecraft-wrapper?
@@ -14,7 +14,7 @@ Wrapper is a Go package that wraps a Minecraft Server (JE) and interacts with it
 ## Installation
 
 ```bash
-go get github.com/wlwanpan/minecraft-wrapper
+go get github.com/ciathefed/minecraft-wrapper
 ```
 
 ## Usage
@@ -82,7 +82,7 @@ Note: This package is developed and tested on Minecraft 1.16, though most functi
 ## Overview
 
 <p align="center">
-  <img src="https://github.com/wlwanpan/minecraft-wrapper/blob/master/assets/architecture.png?raw=true" alt="Minecraft Wrapper Overview"/>
+  <img src="https://github.com/ciathefed/minecraft-wrapper/blob/master/assets/architecture.png?raw=true" alt="Minecraft Wrapper Overview"/>
 </p>
 
 If you are interested, you can visit this [Medium article](https://levelup.gitconnected.com/lets-build-a-minecraft-server-wrapper-in-go-122c087e0023) to learn some of the basic inner working of the wrapper.
@@ -106,20 +106,20 @@ The following apis/commands are from the official minecraft gamepedia [list of c
 - [x] [Difficulty](https://minecraft.gamepedia.com/Commands/difficulty)
 - [ ] [Effect](https://minecraft.gamepedia.com/Commands/effect)
 - [ ] [Enchant](https://minecraft.gamepedia.com/Commands/enchant)
-- [x] [ExperienceAdd](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.ExperienceAdd)
-- [x] [ExperienceQuery](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.ExperienceQuery)
+- [x] [ExperienceAdd](https://godoc.org/github.com/ciathefed/minecraft-wrapper#Wrapper.ExperienceAdd)
+- [x] [ExperienceQuery](https://godoc.org/github.com/ciathefed/minecraft-wrapper#Wrapper.ExperienceQuery)
 - [ ] [Fill](https://minecraft.gamepedia.com/Commands/fill)
 - [ ] [ForceLoad](https://minecraft.gamepedia.com/Commands/forceload)
 - [x] [ForceLoadRemoveAll](https://minecraft.gamepedia.com/Commands/forceload)
 - [ ] [Function](https://minecraft.gamepedia.com/Commands/function)
-- [x] [GameEvents](https://pkg.go.dev/github.com/wlwanpan/minecraft-wrapper#Wrapper.GameEvents) - A GameEvent channel of events happening during in-game (Unofficial)
+- [x] [GameEvents](https://pkg.go.dev/github.com/ciathefed/minecraft-wrapper#Wrapper.GameEvents) - A GameEvent channel of events happening during in-game (Unofficial)
 - [ ] [GameMode](https://minecraft.gamepedia.com/Commands/gamemode)
 - [ ] [GameRule](https://minecraft.gamepedia.com/Commands/gamerule)
 - [x] [Give](https://minecraft.gamepedia.com/Commands/give)
 - [x] [Kick](https://minecraft.gamepedia.com/Commands/kick)
-- [x] [Kill](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Kill) - Terminates the Java Process (Unofficial)
-- [x] [List](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.List) - Returns an arr of connected player struct
-- [x] [Loaded](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Loaded) - Returns bool from a read-only channel once the server is loaded (Unofficial)
+- [x] [Kill](https://godoc.org/github.com/ciathefed/minecraft-wrapper#Wrapper.Kill) - Terminates the Java Process (Unofficial)
+- [x] [List](https://godoc.org/github.com/ciathefed/minecraft-wrapper#Wrapper.List) - Returns an arr of connected player struct
+- [x] [Loaded](https://godoc.org/github.com/ciathefed/minecraft-wrapper#Wrapper.Loaded) - Returns bool from a read-only channel once the server is loaded (Unofficial)
 - [x] [Reload](https://minecraft.gamepedia.com/Commands/reload)
 - [x] [SaveAll](https://minecraft.gamepedia.com/Commands/save#save-all)
 - [x] [SaveOff](https://minecraft.gamepedia.com/Commands/save#save-off)
@@ -134,8 +134,8 @@ The following apis/commands are from the official minecraft gamepedia [list of c
 - [ ] [SpawnPoint](https://minecraft.gamepedia.com/Commands/spawnpoint)
 - [ ] [Spectate](https://minecraft.gamepedia.com/Commands/spectate)
 - [ ] [SpreadPlayers](https://minecraft.gamepedia.com/Commands/spreadplayers)
-- [x] [Start](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Start) (Unofficial)
-- [x] [State](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.State) - Returns the current state of the Wrapper (Unofficial)
+- [x] [Start](https://godoc.org/github.com/ciathefed/minecraft-wrapper#Wrapper.Start) (Unofficial)
+- [x] [State](https://godoc.org/github.com/ciathefed/minecraft-wrapper#Wrapper.State) - Returns the current state of the Wrapper (Unofficial)
 - [x] [Stop](https://minecraft.gamepedia.com/Commands/stop)
 - [ ] [StopSound](https://minecraft.gamepedia.com/Commands/stopsound)
 - [ ] [Summon](https://minecraft.gamepedia.com/Commands/summon)
@@ -145,7 +145,7 @@ The following apis/commands are from the official minecraft gamepedia [list of c
 - [ ] [Teleport](https://minecraft.gamepedia.com/Commands/teleport)
 - [x] [Tell](https://minecraft.gamepedia.com/Commands/tell)
 - [ ] [TellRaw](https://minecraft.gamepedia.com/Commands/tellraw)
-- [x] [Tick](https://godoc.org/github.com/wlwanpan/minecraft-wrapper#Wrapper.Tick) - Returns the running game tick (Unofficial)
+- [x] [Tick](https://godoc.org/github.com/ciathefed/minecraft-wrapper#Wrapper.Tick) - Returns the running game tick (Unofficial)
 - [ ] [Title](https://minecraft.gamepedia.com/Commands/title)
 - [ ] [Trigger](https://minecraft.gamepedia.com/Commands/trigger)
 - [ ] [Weather](https://minecraft.gamepedia.com/Commands/weather)

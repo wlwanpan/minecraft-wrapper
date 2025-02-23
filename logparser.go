@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/wlwanpan/minecraft-wrapper/events"
+	"github.com/ciathefed/minecraft-wrapper/events"
 )
 
 // LogParser is an interface func to decode any server log line

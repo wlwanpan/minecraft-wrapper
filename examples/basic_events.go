@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/signal"
 
-	wrapper "github.com/wlwanpan/minecraft-wrapper"
+	wrapper "github.com/ciathefed/minecraft-wrapper"
 )
 
 // In this example we are mimicking the "seed" commands, where when a player
@@ -16,7 +16,7 @@ import (
 // "[Server] The world seed is: 9785468184"
 
 func main() {
-	c := make(chan os.Signal)
+	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
 	wpr := wrapper.NewDefaultWrapper("server.jar", 1024, 1024)

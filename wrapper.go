@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ciathefed/minecraft-wrapper/events"
+	"github.com/ciathefed/minecraft-wrapper/snbt"
 	"github.com/looplab/fsm"
-	"github.com/wlwanpan/minecraft-wrapper/events"
-	"github.com/wlwanpan/minecraft-wrapper/snbt"
 )
 
 const (
@@ -121,7 +121,7 @@ func (w *Wrapper) newFSM() {
 		WrapperOffline,
 		wrapperFsmEvents,
 		fsm.Callbacks{
-			"enter_online": func(ev *fsm.Event) {
+			"enter_online": func(ctx context.Context, ev *fsm.Event) {
 				if ev.Src == WrapperStarting {
 					select {
 					case w.loadedChan <- true:
@@ -129,7 +129,7 @@ func (w *Wrapper) newFSM() {
 					}
 				}
 			},
-			"enter_offline": func(ev *fsm.Event) {
+			"enter_offline": func(ctx context.Context, ev *fsm.Event) {
 				w.ctxCancelFunc()
 			},
 		},
@@ -167,7 +167,7 @@ func (w *Wrapper) parseLineToEvent(line string) (events.Event, events.EventType)
 }
 
 func (w *Wrapper) updateState(ev events.StateEvent) error {
-	return w.machine.Event(ev.String())
+	return w.machine.Event(context.Background(), ev.String())
 }
 
 func (w *Wrapper) handleCmdEvent(ev events.GameEvent) {

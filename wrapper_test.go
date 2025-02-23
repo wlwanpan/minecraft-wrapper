@@ -8,7 +8,7 @@ import (
 func TestWrapperStart(t *testing.T) {
 	c, err := newTestConsole("testdata/server_start_log")
 	if err != nil {
-		t.Errorf("failed to load test file: %w", err)
+		t.Errorf("failed to load test file: %v", err)
 		return
 	}
 
@@ -40,7 +40,7 @@ func TestWrapperStart(t *testing.T) {
 func TestWrapperOffline(t *testing.T) {
 	c, err := newTestConsole("testdata/server_start_log")
 	if err != nil {
-		t.Errorf("failed to load test file: %w", err)
+		t.Errorf("failed to load test file: %v", err)
 		return
 	}
 
